@@ -1,0 +1,10 @@
+push 10
+push 20
+push 30
+push 89
+sub
+add
+add
+out;test
+;another out
+out
