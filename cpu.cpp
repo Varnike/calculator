@@ -66,58 +66,53 @@ int div()
 
 val_t out()
 {
+	printf("out : %d\n", StackTop(&stack));
 	return StackTop(&stack);
 }
 
 int run_cpu(const char *namein)
 {            
-        FILE *file_in  = open_file(namein, "r");
+	int *code = NULL;
+	int csize = 0;
 
-        assert(file_in); 
-                       
-        int cmd   = 0;
-        val_t val = 0;
+	csize = read_bin(namein, &code)/sizeof(int);
+
+	if (csize < 0)
+		return ERRNUM;
+
+	int pc = 0;
 	
-	start();
+	PROCESS_CMD(start());
+	
+	printf("csize = %d\n", csize);
 
-        while (fscanf(file_in, "%d", &cmd) > 0) { // STOPPED HERE
-		switch (cmd) {
-		case CMD_PUSH:
-			fscanf(file_in, "%d", &val);
-			PROCESS_CMD(push(val));
-			break;
-		case CMD_ADD:
-			PROCESS_CMD(add());
-			break;
-		case CMD_SUB:
+	while(pc != csize) {                                     
+		switch(code[pc++]) {                           
+		case CMD_PUSH:                                 
+			PROCESS_CMD(push(code[pc++]));
+			break;                                 
+		case CMD_ADD:                                  
+			PROCESS_CMD(add());                
+			break;                                 
+		case CMD_SUB:                                  
 			PROCESS_CMD(sub());
-			break;
-		case CMD_MUL:
+			break;                                 
+		case CMD_MUL:                                  
 			PROCESS_CMD(mul());
-			break;
-		case CMD_DIV:
+			break;                                 
+		case CMD_DIV:                                  
 			PROCESS_CMD(div());
-			break;
-		case CMD_OUT:
-			ERRNUM = 0;
-			val = out();
-
-			if (ERRNUM)
-				return ERRNUM;
-			
-			printf("out : %d\n", val);
-
-			break;
-		case CMD_HLT:
+			break;                                 
+		case CMD_OUT:                                  
+			PROCESS_CMD(out());
+			break;                                 
+		case CMD_HLT:                                  
 			PROCESS_CMD(hlt());
-			printf("hlt\n");
-			return 0;
-			break;
-		default:
+			break;                                 
+		default:                                       
 			return UNKNOWN_CMD_ERR;
-		}
-	}
-
-	hlt();
-        return 0;	
+			break;                
+		}                                              
+	}                                                      
+	return 0;
 }

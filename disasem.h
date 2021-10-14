@@ -7,9 +7,9 @@
 #include "commands.h"
 #include <cerrno>    
 
-
+int read_bin(const char *namein, int **code);
 int decompile(const char *namein, const char *nameout);
 int identcmd(strsize str);
 char *cmdName(int cmd);
-
+void processDecomp(int *code, int len, FILE *file);
 #endif

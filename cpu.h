@@ -6,10 +6,11 @@
 #include <cerrno>
 #include "onegin.h"
 #include "commands.h"
+#include "disasem.h"
 
 #define PROCESS_CMD(cmd)							\
 {										\
-	if(cmd)									\
+	if(cmd && ERRNUM)							\
 		return ERRNUM;							\
 }
 

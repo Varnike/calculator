@@ -45,23 +45,25 @@ int identcmd(strsize *str)
 	return -1;
 }
 
-int writecmd(int cmd, FILE *file, strsize str)
+int writecmd(int cmd, strsize *str, Stack *stack)
 {
-	assert(file);
+	assert(str);
 	
-	if (cmd != CMD_PUSH)
-		fprintf(file, "%d\n", cmd);
-	else {
+	StackPush(stack, cmd);
+	//printf("command in stack: %d\n", StackTop(stack));
+	if (cmd == CMD_PUSH) {
 		ERRNUM = 0;
-		val_t val = getValue(&str, 4);
+		val_t val = getValue(str, 4);
+	
 		if (ERRNUM) {
 			printf("syntax err: %d\n", ERRNUM);
 			return ERRNUM;
 		}
-
-	       	fprintf(file, "%d ", CMD_PUSH);
-		printStackVal(val, file);
+		
+		StackPush(stack, val);
+		//printf("stack top value: %d\n", StackTop(stack));
 	}
+
 	return 0;
 }
 
@@ -72,11 +74,9 @@ int compile(const char *namein, const char *nameout)
 
 	textBuff btext = {};
 
-        btext.file_in  = open_file(namein, "r");
-	btext.file_out = open_file(nameout,"w");
-	
+        btext.file_in  = open_file(namein, "r");	
 	assert(btext.file_in);
-	assert(btext.file_out);
+
         
 	if (read_from_file(&btext, namein))
                 return READ_ERR;
@@ -84,6 +84,9 @@ int compile(const char *namein, const char *nameout)
         printf ("OK)\n");
 
 	int cmd = 0;
+
+	Stack stack = {};
+	StackCtor(&stack, 8);
 
         for (int i = 0; i != btext.linecnt; i++) {
 		cmd = identcmd(&btext.str[i]);
@@ -93,9 +96,39 @@ int compile(const char *namein, const char *nameout)
 		if (cmd < 0)
 			return -1;
 
-		if (writecmd(cmd, btext.file_out, btext.str[i]))
+		if (writecmd(cmd, &btext.str[i], &stack))
 			return ERRNUM;
-        }
+        }	
+
+	StackDump(&stack);		
+
+	int err = write_bin(getStackData(&stack), getStackSize(&stack), nameout);
+	
+	if(err)
+		return err;
+
+	StackDtor(&stack);
+
+	close_file(btext.file_in);
+
+	return 0;
+}
+
+int write_bin(val_t *code, int codesize, const char *nameout)
+{
+	assert(nameout);
+
+	FILE *file_out = fopen(nameout, "wb");
+	assert(file_out);
+	
+	ERRNUM = 0;
+	
+	int wrote = fwrite(code, sizeof(val_t), codesize, file_out);
+	
+	if (wrote != codesize)
+		return WRITE_ERR;
+
+	close_file(file_out);
 
 	return 0;
 }

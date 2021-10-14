@@ -41,7 +41,7 @@ int StackDtor(Stack *stack)
 {	
 	ASSERT_OK;
 	
-	memset(stack->data, 0, stack->size);
+	memset(stack->data, 0, stack->capacity * sizeof(val_t));
 
 	stack->capacity = 0;
 	stack->size     =-1;
@@ -90,6 +90,7 @@ val_t StackTop(Stack *stack)
 
 	return stack->data[stack->size - 1];
 }
+
 int StackPush(Stack *stack, val_t val)
 {
 	ASSERT_OK;
@@ -109,6 +110,18 @@ int StackPush(Stack *stack, val_t val)
 	return 0;
 }
 
+int getStackSize(Stack *stack)
+{
+	POP_ASSERT_OK;
+	return stack->size;
+}
+
+val_t *getStackData(Stack *stack)
+{
+	POP_ASSERT_OK;
+	return stack->data;
+}
+
 static int StackResize(Stack *stack, size_t nsize)
 {
 	ASSERT_OK;
@@ -117,10 +130,16 @@ static int StackResize(Stack *stack, size_t nsize)
 
 	setCanaryPtr(&stack->data);
 #endif
-
-#if CANARIES_CHECK == 1 
+	
+#if CANARIES_CHECK == 0 
 	stack->data = (val_t*)reallocarray(stack->data, nsize, sizeof(val_t));
+	memset(stack->data+ stack->size, 0, sizeof(val_t) * (nsize - stack->size));
+#else 
+	stack->data = (val_t*)reallocarray(stack->data, sizeAlign(sizeof(val_t), nsize,
+				sizeof(uint64_t)) + 2 * sizeof(uint64_t), 1);
+	memset((char *)(stack->data+ stack->size) + sizeof(uint64_t), 0, sizeof(val_t) * (nsize - stack->size));
 #endif
+
 
 #if CANARIES_CHECK == 1 
 	setDataPtr(&stack->data);
@@ -153,9 +172,6 @@ int StackSetFileName(Stack *stack, const char *name)
 }
 
 
-//#define CHECK_(what, code)  if (what) SET_ERR (code)
-
-
 int StackCheck(Stack *stack)
 {
 	CHECK_(stack == NULL, 							NULLPTR_STACK);
@@ -178,7 +194,8 @@ int StackCheck(Stack *stack)
 }
 
 
-
+#define file stdout
+#undef file
 void _StackDump(Stack *stack, const char *srcfunc, const char *srcfile, const int line) {
 #if MULTIPLE_LOGS == 0
 	FILE *file = fopen("log.txt", "w");
@@ -250,6 +267,7 @@ void _StackDump(Stack *stack, const char *srcfunc, const char *srcfile, const in
 #endif
 	fprintf(file,"}\n\n");
 	fclose(file);
+
 }
 
 static void setCanaryPtr(val_t **data) 
@@ -287,8 +305,6 @@ uint32_t djb_hash(const char* data, size_t length)
 #if HASH_CHECK == 1
 uint32_t StackHash(Stack *stack)
 {
-	Stack stack_ex = {};
-
 	uint32_t dhash = 0, stackhash = 0;
 
 	dhash = djb_hash((const char *)stack->data, stack->size * sizeof(val_t));
@@ -296,7 +312,7 @@ uint32_t StackHash(Stack *stack)
 	uint32_t current_hash = stack->hash;	
 	stack->hash = dhash;
 		
-	dhash = djb_hash((const char *)stack, sizeof(stack_ex));
+	dhash = djb_hash((const char *)stack, sizeof(stack));
 
 	stack->hash = current_hash;
 

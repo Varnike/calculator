@@ -5,28 +5,80 @@ int decompile(const char *namein, const char *nameout)
 	assert(namein);                         
 	assert(nameout);                        	
 						
-	FILE *file_in  = open_file(namein, "r");
 	FILE *file_out = open_file(nameout,"w");
-						
-	assert(file_in);                  
-	assert(file_out);                 
-					
-	int cmd   = 0;
-	val_t val = 0;
-	while (fscanf(file_in, "%d", &cmd) > 0) {
-		const char *commandn = cmdName(cmd);
+	assert(file_out);                 	
 
-		if (commandn == NULL)
-			return UNKNOWN_CMD_ERR;
+	int *code = NULL;
+	int codesize = read_bin(namein, &code);
 
-		if (cmd == CMD_PUSH) {
-			fscanf(file_in, "%d", &val); //TODO
-			fprintf(file_out, "%s %d\n", commandn, val);
-		}
-		else 	
-			fprintf(file_out, "%s\n", commandn);
+	for (int i = 0; i != codesize / sizeof(int); i++) {
+		printf(">-< %d\n", code[i]);
 	}
+
+	processDecomp(code, codesize/sizeof(int), file_out);
+	
+	close_file(file_out);
 	return 0;
+}
+
+int read_bin(const char *namein, int **code)
+{
+	assert(namein);
+
+	FILE *file_in  = open_file(namein, "rb");
+
+	assert(file_in);
+
+	int codesize = getFileSize(namein); 
+
+	*code = (int *)calloc(codesize, 1);
+	fread(*code, sizeof(int), codesize / sizeof(int), file_in);
+	
+	if (*code == NULL) {
+		ERRNUM = READ_ERR;
+		return -1;
+	}
+	
+	close_file(file_in);
+
+	return codesize;
+}
+
+void processDecomp(int *code, int len, FILE *file)
+{
+	assert(code);
+	assert(file);
+
+	int pp =  0;
+	int val = 0;
+	while(pp != len) {
+		switch(code[pp++]) {
+		case CMD_PUSH:
+			fprintf(file, "push %d\n", code[pp++]);
+			break;               
+		case CMD_ADD:                
+			fprintf(file, "add\n");
+			break;               
+		case CMD_SUB:                
+			fprintf(file, "sub\n");
+			break;               
+		case CMD_MUL:                
+			fprintf(file, "mul\n");
+			break;               
+		case CMD_DIV:                
+			fprintf(file, "div\n");
+			break;               
+		case CMD_OUT:                
+			fprintf(file, "out\n");
+			break;               
+		case CMD_HLT:                
+			fprintf(file, "hlt\n");
+			break;               
+		default:                     
+			printf("UNKNOWN CMD!!!");
+			return;
+		}
+	}
 }
 //TODO DEFINES
 char* cmdName(int cmd)

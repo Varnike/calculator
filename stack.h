@@ -70,7 +70,8 @@
 
 #define CHECK_FOR_INIT 								\
 {										\
-	if(stack->size != 0 || stack->capacity != 0 || stack->data != NULL) {	\
+	if(stack == NULL || stack->size != 0 || stack->capacity != 0 		\
+			|| stack->data != NULL) {				\
 		ERRNUM = INVALID_STACK;						\
 		_StackDump(stack, __func__, src_file,src_line);			\
 		EXIT_ERR;							\
@@ -90,7 +91,7 @@
 #define SET_HASH ;
 
 #endif
-typedef int val_t;
+typedef int  val_t;
 
 const int POISONED_MEM = 1488;
 const int POISONED_VAL = 0xDEDBEAF;
@@ -125,6 +126,9 @@ int _StackCtor(Stack *stack, int size = MINIMUM_STACK_SIZE, const int src_line =
 int StackDtor(Stack *stack);
 int StackSetFileName(Stack *stack,const char *name);
 val_t StackTop(Stack *stack);
+
+int getStackSize(Stack *stack);
+val_t *getStackData(Stack *stack);
 
 int StackCheck(Stack *stack);
 void _StackDump(Stack *stack, const char *srcfunc, const char *srcfile, const int line);

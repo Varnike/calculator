@@ -8,7 +8,9 @@
 #include <cerrno>
 
 int identcmd(strsize *str);
-int writecmd(int cmd, FILE *file, strsize str);
+int writecmd(int cmd, strsize *str, Stack *stack);
 int compile(const char *namein, const char *nameout);
 val_t getValue(strsize *str, int valpos);
+int write_bin(val_t *code, int codesize, const char *nameout);
+int setCodeArray(Stack *stack, val_t *arr);
 #endif // _ASM_H

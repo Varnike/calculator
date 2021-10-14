@@ -9,15 +9,16 @@ int main(int argc, char **argv)
 		switch(*(argv[1])) {
 		case 'r':
 			printf("---run cpu---\n");
-			run_cpu("_asm_out.txt");
+			if (run_cpu("asm.bin"));
+				printf("%s\n", errmsg(ERRNUM));
 			break;
 		case 'c':
 			printf("---compilation---\n");
-			compile("_asm_in.txt", "_asm_out.txt");
+			compile("_asm_in.txt", "asm.bin");
 			break;
 		case 'd':
 			printf("---decompilation---\n");
-			decompile("_asm_out.txt", "input.txt");
+			decompile("asm.bin", "input.txt");
 			break;
 		default:
 			printf("bad parameter!\n");
@@ -26,6 +27,8 @@ int main(int argc, char **argv)
 		}
 		return 0;
 	}
+	if (ERRNUM)
+		printf("%s\n", errmsg(ERRNUM));
 	printf("no parameters!\n");
 	return 0;
 }
