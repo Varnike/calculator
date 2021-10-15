@@ -84,9 +84,8 @@ int run_cpu(const char *namein)
 	
 	PROCESS_CMD(start());
 	
-	printf("csize = %d\n", csize);
-
-	while(pc != csize) {                                     
+	while(pc != csize) { 
+		cpu_dump(code, csize, pc);		
 		switch(code[pc++]) {                           
 		case CMD_PUSH:                                 
 			PROCESS_CMD(push(code[pc++]));
@@ -115,4 +114,29 @@ int run_cpu(const char *namein)
 		}                                              
 	}                                                      
 	return 0;
+}
+
+void cpu_dump(val_t *code, int size, int pc)
+{
+	assert(code);
+	
+	if (size > 255)
+		size = 255;
+
+	for (int i = 0; i!= size; i++) {
+		printf("%02x ", i);
+	}
+
+	printf("\n");
+
+	for (int i = 0; i != size; i++) {
+		printf("%02x ", code[i]);
+	}
+
+	printf("\n");
+	printf("%*s\n", pc * 3 + 1, "^");
+
+#if CPU_SLEEP == 1
+	getchar();
+#endif
 }

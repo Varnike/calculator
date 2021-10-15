@@ -45,15 +45,17 @@ int identcmd(strsize *str)
 	return -1;
 }
 
-int writecmd(int cmd, strsize *str, Stack *stack)
+int writecmd(int cmd, strsize *str, Stack *stack, FILE *lstfile)
 {
 	assert(str);
 	
 	StackPush(stack, cmd);
-	//printf("command in stack: %d\n", StackTop(stack));
+	
+	val_t val = 0;
+
 	if (cmd == CMD_PUSH) {
 		ERRNUM = 0;
-		val_t val = getValue(str, 4);
+		val = getValue(str, 4);
 	
 		if (ERRNUM) {
 			printf("syntax err: %d\n", ERRNUM);
@@ -61,10 +63,27 @@ int writecmd(int cmd, strsize *str, Stack *stack)
 		}
 		
 		StackPush(stack, val);
-		//printf("stack top value: %d\n", StackTop(stack));
 	}
 
+	printLst(cmd, getStackSize(stack), sizeof(val_t), val, lstfile);
+
 	return 0;
+}
+
+void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
+{
+	if (!lstfile)
+		lstfile = NULL;
+
+	if (cmd == CMD_PUSH) {
+		fprintf(lstfile, "%04x\t\t%s %d\t\t%02x%02x %02x%02x\n", (pos - 2) * size, 
+				cmdName(cmd), val, cmd & 255, (cmd / 256) & 255, 
+				val & 255, (val / 256) & 255);
+	}
+	else {
+		fprintf(lstfile, "%04x\t\t%s\t\t%02x%02x\n", (pos - 1) *size, cmdName(cmd), 
+				cmd & 255, (cmd / 256) & 255);
+	}
 }
 
 int compile(const char *namein, const char *nameout)
@@ -74,14 +93,14 @@ int compile(const char *namein, const char *nameout)
 
 	textBuff btext = {};
 
-        btext.file_in  = open_file(namein, "r");	
+        btext.file_in  = open_file(namein, "r");
+	FILE *lst_file = open_file("lst.txt", "w");
+	
 	assert(btext.file_in);
-
+	assert(lst_file);
         
 	if (read_from_file(&btext, namein))
                 return READ_ERR;
-
-        printf ("OK)\n");
 
 	int cmd = 0;
 
@@ -96,7 +115,7 @@ int compile(const char *namein, const char *nameout)
 		if (cmd < 0)
 			return -1;
 
-		if (writecmd(cmd, &btext.str[i], &stack))
+		if (writecmd(cmd, &btext.str[i], &stack, lst_file))
 			return ERRNUM;
         }	
 
@@ -110,7 +129,9 @@ int compile(const char *namein, const char *nameout)
 	StackDtor(&stack);
 
 	close_file(btext.file_in);
+	close_file(lst_file);
 
+	printf("==compilation complete, lst file generated==\n");
 	return 0;
 }
 
@@ -152,9 +173,8 @@ val_t getValue(strsize *str, int valpos)
 	char *ptr = nullptr;
 
 	errno = 0;
-	printf("%c\n", str->strptr[i]);
+	//printf("%c\n", str->strptr[i]);
 	val = strtod(str->realptr + i, &ptr);
-	printf("VALUE is %d\n", val);
 
 	if (errno != 0 || *ptr != '\0')         
 		ERRNUM = UNKNOWN_VAL_ERR;                                  

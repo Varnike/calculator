@@ -27,5 +27,6 @@ int mul();
 int start();
 int hlt();
 val_t out();
+void cpu_dump(val_t *code, int size, int pp);
 
 #endif //CALCULATOR_H

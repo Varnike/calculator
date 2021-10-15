@@ -10,10 +10,12 @@ int decompile(const char *namein, const char *nameout)
 
 	int *code = NULL;
 	int codesize = read_bin(namein, &code);
-
+	
+	/*
 	for (int i = 0; i != codesize / sizeof(int); i++) {
 		printf(">-< %d\n", code[i]);
 	}
+	*/
 
 	processDecomp(code, codesize/sizeof(int), file_out);
 	

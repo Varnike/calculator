@@ -6,11 +6,13 @@
 #include "stack.h"
 #include "commands.h"
 #include <cerrno>
+#include "disasem.h"
 
 int identcmd(strsize *str);
-int writecmd(int cmd, strsize *str, Stack *stack);
+int writecmd(int cmd, strsize *str, Stack *stack, FILE *lstfile = NULL);
 int compile(const char *namein, const char *nameout);
 val_t getValue(strsize *str, int valpos);
 int write_bin(val_t *code, int codesize, const char *nameout);
 int setCodeArray(Stack *stack, val_t *arr);
+void printLst(int cmd, int pos, int size, val_t val = 0, FILE *file = NULL);
 #endif // _ASM_H

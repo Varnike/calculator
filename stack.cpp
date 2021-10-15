@@ -7,8 +7,9 @@ static void setDataPtr(val_t **data);
 int _StackCtor(Stack *stack, int size, const int src_line, const char *src_file)
 {	
 	CHECK_FOR_INIT;
-
+#ifdef GREAT_PRINT
 	printf("size = %d\n", size);
+#endif
 #if CANARIES_CHECK == 1
 	stack->LCANARY = CANARYVAL;
 	stack->RCANARY = CANARYVAL;
