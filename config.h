@@ -25,4 +25,9 @@
 
 #define CANARIES_CHECK 1
 
+/*
+ * Cpu waits input from keyboard after each dump.
+ */
+#define CPU_SLEEP 1
+
 #endif

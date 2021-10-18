@@ -8,11 +8,11 @@ int readNcnt(textBuff *btext)
 		return -1;
 	}
 
-	printf("BUFFSIZE = %zu\n", btext->buffsize);	
+	//printf("BUFFSIZE = %zu\n", btext->buffsize);	
 
 	btext->linecnt = count_lines(btext->buff, btext->buffsize); 
 
-	printf("NLINES = %d\n", btext->linecnt);
+	//printf("NLINES = %d\n", btext->linecnt);
 	return btext->linecnt;
 }
 

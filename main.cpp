@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "asm.h"
 #include "disasem.h"
-#include "onegin.h"
 #include "cpu.h"
 int main(int argc, char **argv)
 {
@@ -14,11 +13,13 @@ int main(int argc, char **argv)
 			break;
 		case 'c':
 			printf("---compilation---\n");
-			compile("_asm_in.txt", "asm.bin");
+			if (compile("_asm_in.txt", "asm.bin"))
+				printf("%s\n", errmsg(ERRNUM));
 			break;
 		case 'd':
 			printf("---decompilation---\n");
-			decompile("asm.bin", "input.txt");
+			if(decompile("asm.bin", "input.txt"))
+				printf("%s\n", errmsg(ERRNUM));
 			break;
 		default:
 			printf("bad parameter!\n");

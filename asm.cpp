@@ -74,7 +74,7 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 {
 	if (!lstfile)
 		lstfile = NULL;
-
+//(char*)(&num)//TODO
 	if (cmd == CMD_PUSH) {
 		fprintf(lstfile, "%04x\t\t%s %d\t\t%02x%02x %02x%02x\n", (pos - 2) * size, 
 				cmdName(cmd), val, cmd & 255, (cmd / 256) & 255, 
@@ -84,6 +84,24 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 		fprintf(lstfile, "%04x\t\t%s\t\t%02x%02x\n", (pos - 1) *size, cmdName(cmd), 
 				cmd & 255, (cmd / 256) & 255);
 	}
+}
+
+int parse(textBuff *btext, Stack *stack, FILE *lst_file)
+{
+	int cmd = 0;
+	for (int i = 0; i != btext->linecnt; i++) {                  
+		cmd = identcmd(&btext->str[i]);                      
+		if (cmd == 0)                                       
+			continue;                                   
+								    
+		if (cmd < 0)                                        
+			return -1;                                  
+								    
+		if (writecmd(cmd, &btext->str[i], stack, lst_file)) 
+			return ERRNUM;                              
+	}
+
+	return 0;
 }
 
 int compile(const char *namein, const char *nameout)
@@ -106,23 +124,13 @@ int compile(const char *namein, const char *nameout)
 
 	Stack stack = {};
 	StackCtor(&stack, 8);
-
-        for (int i = 0; i != btext.linecnt; i++) {
-		cmd = identcmd(&btext.str[i]);
-		if (cmd == 0)
-			continue;
-
-		if (cmd < 0)
-			return -1;
-
-		if (writecmd(cmd, &btext.str[i], &stack, lst_file))
-			return ERRNUM;
-        }	
-
-	StackDump(&stack);		
-
-	int err = write_bin(getStackData(&stack), getStackSize(&stack), nameout);
 	
+	int err = parse(&btext, &stack, lst_file);
+	if (err)
+		return err;	
+
+	err = write_bin(getStackData(&stack), getStackSize(&stack), nameout);
+
 	if(err)
 		return err;
 
@@ -130,6 +138,9 @@ int compile(const char *namein, const char *nameout)
 
 	close_file(btext.file_in);
 	close_file(lst_file);
+	
+	free(btext.buff);
+	free(btext.str);
 
 	printf("==compilation complete, lst file generated==\n");
 	return 0;
@@ -143,9 +154,13 @@ int write_bin(val_t *code, int codesize, const char *nameout)
 	assert(file_out);
 	
 	ERRNUM = 0;
+	Hdr header = {NAME, VERSION};
+
+	int wrote = fwrite(&header, sizeof(Hdr), 1, file_out);
+	if (wrote != 1)
+        	return WRITE_ERR;
 	
-	int wrote = fwrite(code, sizeof(val_t), codesize, file_out);
-	
+	wrote = fwrite(code, sizeof(val_t), codesize, file_out);	
 	if (wrote != codesize)
 		return WRITE_ERR;
 
@@ -173,7 +188,9 @@ val_t getValue(strsize *str, int valpos)
 	char *ptr = nullptr;
 
 	errno = 0;
+
 	//printf("%c\n", str->strptr[i]);
+	
 	val = strtod(str->realptr + i, &ptr);
 
 	if (errno != 0 || *ptr != '\0')         
@@ -181,3 +198,23 @@ val_t getValue(strsize *str, int valpos)
 	
 	return val;	 
 }
+
+#if 0
+void setHdr(val_t **code)
+{
+	assert(code);
+	assert(*code);
+	Hdr header = {};
+
+	//*(Hdr*)(*code) = header;
+	*code = (val_t*)((char*)(*code) + sizeof(Hdr));
+}
+
+void setCodePtr(val_t **code)
+{
+	assert(code);
+	assert(*code);
+
+	*code = (val_t*)((char*)(*code) - sizeof(Hdr));
+}
+#endif

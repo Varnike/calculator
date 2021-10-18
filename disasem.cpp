@@ -4,22 +4,36 @@ int decompile(const char *namein, const char *nameout)
 {
 	assert(namein);                         
 	assert(nameout);                        	
-						
+					
 	FILE *file_out = open_file(nameout,"w");
 	assert(file_out);                 	
 
 	int *code = NULL;
 	int codesize = read_bin(namein, &code);
 	
-	/*
-	for (int i = 0; i != codesize / sizeof(int); i++) {
-		printf(">-< %d\n", code[i]);
+	if (codesize < 0) {
+		fclose(file_out);
+		return ERRNUM;
 	}
-	*/
-
-	processDecomp(code, codesize/sizeof(int), file_out);
 	
+	int is_valid = checkVersion((Hdr *)(code));
+	
+	if (is_valid) {
+		free(code);
+		fclose(file_out);
+		return ERRNUM;
+	}
+	
+	setCodePtr(&code);
+	
+	int cmd_cnt = (codesize - sizeof(Hdr))/sizeof(int);
+	processDecomp(code, cmd_cnt, file_out);
+	
+	setRealPtr(&code);
+
 	close_file(file_out);
+	free(code);
+
 	return 0;
 }
 
@@ -32,7 +46,7 @@ int read_bin(const char *namein, int **code)
 	assert(file_in);
 
 	int codesize = getFileSize(namein); 
-
+	//TODO check
 	*code = (int *)calloc(codesize, 1);
 	fread(*code, sizeof(int), codesize / sizeof(int), file_in);
 	
@@ -83,6 +97,7 @@ void processDecomp(int *code, int len, FILE *file)
 	}
 }
 //TODO DEFINES
+//TODO array
 char* cmdName(int cmd)
 {	
 	char *name = NULL;
@@ -112,4 +127,30 @@ char* cmdName(int cmd)
 		return NULL; 
 	}
 	return name;
+}
+
+int checkVersion(const Hdr *header)
+{
+	if (header->name != NAME)
+		return ERRNUM = INVALID_SIGN_ERR;
+	if (header->version != VERSION)
+		return ERRNUM = WRONG_VERSION_ERR;
+	else 
+		return 0;
+}
+
+void setCodePtr(val_t **code)
+{
+	assert(code);
+	assert(*code);
+
+	*code = (val_t*)((char*)(*code) + sizeof(Hdr));
+}
+
+void setRealPtr(val_t **code)
+{
+	assert(code);
+	assert(*code);
+
+	*code = (val_t*)((char*)(*code) - sizeof(Hdr));
 }

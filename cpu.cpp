@@ -11,6 +11,7 @@ int start()
 
 int hlt()
 {
+	printf("hlt\n");
 	if (StackDtor(&stack))
 		return ERRNUM;
 	return NO_ERR;
@@ -67,28 +68,37 @@ int div()
 val_t out()
 {
 	printf("out : %d\n", StackTop(&stack));
-	return StackTop(&stack);
+	return StackPop(&stack);
 }
 
 int run_cpu(const char *namein)
 {            
-	int *code = NULL;
-	int csize = 0;
+	CPU cpu = {};	
 
-	csize = read_bin(namein, &code)/sizeof(int);
+	int size = read_bin(namein, &cpu.code);
 
-	if (csize < 0)
+	if (size < 0)
+		return ERRNUM;
+	
+	cpu.csize = (size - sizeof(Hdr))/sizeof(val_t);
+
+	if (cpu.csize < 0)
+		return ERRNUM = INVALID_BIN_DATA;
+
+	int is_unvalid = checkVersion((Hdr*)cpu.code);
+	
+	if (is_unvalid)
 		return ERRNUM;
 
-	int pc = 0;
+	setCodePtr(&cpu.code);
 	
 	PROCESS_CMD(start());
 	
-	while(pc != csize) { 
-		cpu_dump(code, csize, pc);		
-		switch(code[pc++]) {                           
+	while(cpu.pc != cpu.csize) { 
+		cpu_dump(cpu);
+		switch(cpu.code[cpu.pc++]) {                           
 		case CMD_PUSH:                                 
-			PROCESS_CMD(push(code[pc++]));
+			PROCESS_CMD(push(cpu.code[cpu.pc++]));
 			break;                                 
 		case CMD_ADD:                                  
 			PROCESS_CMD(add());                
@@ -112,29 +122,33 @@ int run_cpu(const char *namein)
 			return UNKNOWN_CMD_ERR;
 			break;                
 		}                                              
-	}                                                      
+	}
+
+	setRealPtr(&cpu.code);
+
+	free(cpu.code);	
 	return 0;
 }
 
-void cpu_dump(val_t *code, int size, int pc)
+void cpu_dump(CPU cpu)
 {
-	assert(code);
+	assert(cpu.code);
 	
-	if (size > 255)
-		size = 255;
+	if (cpu.csize > 255)
+		cpu.csize = 255;
 
-	for (int i = 0; i!= size; i++) {
+	for (int i = 0; i!= cpu.csize; i++) {
 		printf("%02x ", i);
 	}
 
 	printf("\n");
 
-	for (int i = 0; i != size; i++) {
-		printf("%02x ", code[i]);
+	for (int i = 0; i != cpu.csize; i++) {
+		printf("%02x ", cpu.code[i]);
 	}
 
 	printf("\n");
-	printf("%*s\n", pc * 3 + 1, "^");
+	printf("%*s\n", cpu.pc * 3 + 1, "^");
 
 #if CPU_SLEEP == 1
 	getchar();

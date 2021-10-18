@@ -2,10 +2,9 @@
 #define CALCULATOR_H
 
 #include "stack.h"
-#include "input.h"
 #include <cerrno>
 #include "onegin.h"
-#include "commands.h"
+#include "enum.h"
 #include "disasem.h"
 
 #define PROCESS_CMD(cmd)							\
@@ -18,6 +17,17 @@ typedef double value_t;
 
 extern Stack stack;
 
+struct CPU {
+	val_t *code;
+	int pc;
+	int csize;
+	//TODO Stack stack;
+	//For future
+	val_t ax;
+	val_t bx;
+	val_t cx;
+	val_t dx;
+};
 int run_cpu(const char *fname);
 int push(value_t);
 int sub();
@@ -27,6 +37,6 @@ int mul();
 int start();
 int hlt();
 val_t out();
-void cpu_dump(val_t *code, int size, int pp);
+void cpu_dump(CPU cpu);
 
 #endif //CALCULATOR_H

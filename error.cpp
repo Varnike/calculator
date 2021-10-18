@@ -29,9 +29,20 @@ const char *errmsg(int errt)
 		"Invalid data left canary!",
 		"Invalid hash, data corrupted!"
         };
-        if (errt >= 0 && errt <= ERRS_CNT)
+
+	const char *proc_messages[] = {
+		"Assembler: syntax error!",
+		"Unknown command error!",
+		"Unknown value!",
+		"Wrong input file version!",
+		"Invalid file signature!"
+	};
+
+        if (errt >= 0   && errt <= ERRS_CNT)
                 return messages[errt];
 
+	if (errt >= 100 && errt < PROC_ERRS + 100)
+		return proc_messages[errt - 100];
         return messages[UNKNOWN_ERR];
 }
 

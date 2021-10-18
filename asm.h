@@ -4,7 +4,7 @@
 #include <cassert>
 #include "onegin.h"
 #include "stack.h"
-#include "commands.h"
+#include "enum.h"
 #include <cerrno>
 #include "disasem.h"
 
@@ -15,4 +15,9 @@ val_t getValue(strsize *str, int valpos);
 int write_bin(val_t *code, int codesize, const char *nameout);
 int setCodeArray(Stack *stack, val_t *arr);
 void printLst(int cmd, int pos, int size, val_t val = 0, FILE *file = NULL);
+#if 0
+void setHdr(val_t **code);
+void setRealPtr(val_t **code);
+#endif
+int parse(textBuff *btext, Stack *stack, FILE *file);
 #endif // _ASM_H

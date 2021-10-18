@@ -1,15 +1,8 @@
-#ifndef COMMANDS_H
-#define COMMANDS_H
-
-enum commands {
-	CMD_PUSH =  1,
-	CMD_SUB  = 3,
-	CMD_DIV  = 5,
-	CMD_ADD  = 2,
-	CMD_MUL  = 4,
-	CMD_OUT  = 10,
-	CMD_HLT  = 11,
-	CMD_CRACK= 12
-};
-
-#endif // COMMANDS_H
+DEF_CMD(1, PUSH)
+DEF_CMD(2,  ADD)
+DEF_CMD(3,  SUB)
+DEF_CMD(4,  MUL)
+DEF_CMD(5,  DIV)
+DEF_CMD(6,   IN)
+DEF_CMD(10, OUT)
+DEF_CMD(11, HLT)

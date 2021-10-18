@@ -49,10 +49,14 @@ enum errtype {
 	INVALID_HASH	       = 22
 };
 
+const int PROC_ERRS = 5; 
 enum assert_errs {
-	SYNTAX_ERR	= 101,
-	UNKNOWN_CMD_ERR	= 102,
-	UNKNOWN_VAL_ERR = 103
+	SYNTAX_ERR	  = 100,
+	UNKNOWN_CMD_ERR	  = 101,
+	UNKNOWN_VAL_ERR   = 102,
+	WRONG_VERSION_ERR = 103,
+	INVALID_SIGN_ERR  = 104,
+	INVALID_BIN_DATA  = 105
 };
 /**
  * Returns a pointer to the textual description of the code errtype.
