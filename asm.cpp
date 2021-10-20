@@ -1,5 +1,14 @@
 #include "asm.h"
 
+#define DEF_CMD(num, name, args, ...)							\
+	if (strcmp(str->realptr, #name) == 0) {						\
+		code[ip++] = CMD##name;							\
+		for (int i = 0; i < args; i++) {					\
+			StackPush(&stack, getValue(str, strlen(#name)));		\
+		}									\
+	}
+
+#undef DEF_CMD
 int identcmd(strsize *str)
 {
 	assert(str->realptr);
@@ -198,23 +207,3 @@ val_t getValue(strsize *str, int valpos)
 	
 	return val;	 
 }
-
-#if 0
-void setHdr(val_t **code)
-{
-	assert(code);
-	assert(*code);
-	Hdr header = {};
-
-	//*(Hdr*)(*code) = header;
-	*code = (val_t*)((char*)(*code) + sizeof(Hdr));
-}
-
-void setCodePtr(val_t **code)
-{
-	assert(code);
-	assert(*code);
-
-	*code = (val_t*)((char*)(*code) - sizeof(Hdr));
-}
-#endif

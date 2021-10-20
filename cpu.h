@@ -7,6 +7,18 @@
 #include "enum.h"
 #include "disasem.h"
 
+#define Push(val)								\
+{										\
+	if (StackPush(&stack, val))						\
+		/*DO SMTH*/;							\
+}
+
+#define CHECK_POP								\
+{										\
+	if (ERRNUM)								\
+		/*DO SMTH*/;							\
+}
+
 #define PROCESS_CMD(cmd)							\
 {										\
 	if(cmd && ERRNUM)							\
@@ -19,7 +31,7 @@ extern Stack stack;
 
 struct CPU {
 	val_t *code;
-	int pc;
+	int ip;
 	int csize;
 	//TODO Stack stack;
 	//For future
