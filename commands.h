@@ -38,15 +38,17 @@ DEF_CMD(6,   IN, 0,
 			scanf("%d", &a);
 			Push(a);
 		})
+
 DEF_CMD(10, OUT, 0, 
 		{
 			val_t a = StackPop(&stack);
 			CHECK_POP;
 			printf("out: %d\n", a);
 		})
+
 DEF_CMD(11, HLT, 0, 
 		{
 			int err = StackDtor(&stack);
 			if (err)
-				/*DO SMTH TODO*/;
+				assert("DIDNT DIE\n");
 		})

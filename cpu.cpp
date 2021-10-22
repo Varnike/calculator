@@ -8,17 +8,9 @@
 
 Stack stack = {};
 
-int start()
+int start_cpu()
 {
 	if (StackCtor(&stack, 8))
-		return ERRNUM;
-	return NO_ERR;
-}
-
-int hlt()
-{
-	printf("hlt\n");
-	if (StackDtor(&stack))
 		return ERRNUM;
 	return NO_ERR;
 }
@@ -33,18 +25,8 @@ int run_cpu(const char *namein)
 		return ERRNUM;
 	
 	cpu.csize = (size - sizeof(Hdr))/sizeof(val_t);
-
-	if (cpu.csize < 0)
-		return ERRNUM = INVALID_BIN_DATA;
-
-	int is_unvalid = checkVersion((Hdr*)cpu.code);
 	
-	if (is_unvalid)
-		return ERRNUM;
-
-	setCodePtr(&cpu.code);
-	
-	PROCESS_CMD(start());
+	start_cpu();
 	
 	while(cpu.ip != cpu.csize) { 
 		cpu_dump(cpu);
@@ -55,9 +37,7 @@ int run_cpu(const char *namein)
 			break;
 		}
 	}
-
-	setRealPtr(&cpu.code);
-
+	
 	free(cpu.code);	
 	return 0;
 }

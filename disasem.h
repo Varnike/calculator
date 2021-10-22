@@ -10,11 +10,8 @@
 
 int read_bin(const char *namein, int **code);
 int decompile(const char *namein, const char *nameout);
-int identcmd(strsize str);
 char *cmdName(int cmd);
 void processDecomp(int *code, int len, FILE *file);
 
-int checkVersion(const Hdr *header);
-void setCodePtr(val_t **code);
-void setRealPtr(val_t **code);
+int checkHdr(FILE *file);
 #endif

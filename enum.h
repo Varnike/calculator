@@ -10,7 +10,7 @@ enum commands {
 #undef DEF_CMD
 
 const uint32_t NAME    = 0x4E4545;
-const uint32_t VERSION = 0x01010001;
+const uint32_t VERSION = 0x01020001;
 
 struct Hdr {
 	uint32_t name;

@@ -41,14 +41,9 @@ struct CPU {
 	val_t dx;
 };
 int run_cpu(const char *fname);
-int push(value_t);
-int sub();
-int div();
-int add();
-int mul();
-int start();
-int hlt();
-val_t out();
+
+int start_cpu();
+
 void cpu_dump(CPU cpu);
 
 #endif //CALCULATOR_H

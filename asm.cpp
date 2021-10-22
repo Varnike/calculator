@@ -1,83 +1,20 @@
 #include "asm.h"
 
 #define DEF_CMD(num, name, args, ...)							\
-	if (strcmp(str->realptr, #name) == 0) {						\
-		code[ip++] = CMD##name;							\
-		for (int i = 0; i < args; i++) {					\
-			StackPush(&stack, getValue(str, strlen(#name)));		\
-		}									\
+	if (strcmp(token, #name) == 0) {						\
+		StackPush(stack, num);							\
+		for (int i = 0; i < args; i++) {                                        \
+			token = strtok(nullptr, delim);					\
+			if (token == NULL)						\
+				return ERRNUM = SYNTAX_ERR;				\
+			ERRNUM = 0;							\
+			int val = getValue(token);					\
+			if (ERRNUM)							\
+				return ERRNUM;						\
+        		StackPush(stack, val);						\
+		}                                                                       \
+		goto next_label;							\
 	}
-
-#undef DEF_CMD
-int identcmd(strsize *str)
-{
-	assert(str->realptr);
-
-	for (int i = 0; i != str->len; i++, str->realptr++) { 
-        	if (*str->realptr == ';')
-		        return 0;        
-		if (!isspace(*str->realptr))
-	                break;
-	}
-
-	for (int j = 0; j!= str->len; j++)
-        	if (str->realptr[j] == ';')
-        	        str->realptr[j] = '\0';
-
-	//TODO in future detect syntax errors better
-	if (strncmp(str->realptr, "push", 4) == 0)
-		return CMD_PUSH;
-
-	if (strncmp(str->realptr, "add", 3) == 0)
-        	return CMD_ADD;
-
-	if (strncmp(str->realptr, "sub", 3) == 0)
-        	return CMD_SUB;
-
-	if (strncmp(str->realptr, "mul", 3) == 0)
-        	return CMD_MUL;
-
-	if (strncmp(str->realptr, "div", 3) == 0)
-	        return CMD_DIV;
-
-	if (strncmp(str->realptr, "out", 3) == 0)
-        	return CMD_OUT;
-	
-	if (strncmp(str->realptr, "hlt", 3) == 0)
-		return CMD_HLT;
-
-	if (strncmp(str->realptr, ";", 1) == 0)
-		return 0;
-	
-	ERRNUM = UNKNOWN_ERR;
-	printf("ERROR\n");
-	return -1;
-}
-
-int writecmd(int cmd, strsize *str, Stack *stack, FILE *lstfile)
-{
-	assert(str);
-	
-	StackPush(stack, cmd);
-	
-	val_t val = 0;
-
-	if (cmd == CMD_PUSH) {
-		ERRNUM = 0;
-		val = getValue(str, 4);
-	
-		if (ERRNUM) {
-			printf("syntax err: %d\n", ERRNUM);
-			return ERRNUM;
-		}
-		
-		StackPush(stack, val);
-	}
-
-	printLst(cmd, getStackSize(stack), sizeof(val_t), val, lstfile);
-
-	return 0;
-}
 
 void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 {
@@ -85,9 +22,10 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 		lstfile = NULL;
 //(char*)(&num)//TODO
 	if (cmd == CMD_PUSH) {
+		
 		fprintf(lstfile, "%04x\t\t%s %d\t\t%02x%02x %02x%02x\n", (pos - 2) * size, 
 				cmdName(cmd), val, cmd & 255, (cmd / 256) & 255, 
-				val & 255, (val / 256) & 255);
+				val & 255, (val / 256) & 255);	
 	}
 	else {
 		fprintf(lstfile, "%04x\t\t%s\t\t%02x%02x\n", (pos - 1) *size, cmdName(cmd), 
@@ -95,23 +33,26 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 	}
 }
 
-int parse(textBuff *btext, Stack *stack, FILE *lst_file)
+int process_asm(textBuff *btext, Stack *stack, FILE *lst_file)
 {
-	int cmd = 0;
-	for (int i = 0; i != btext->linecnt; i++) {                  
-		cmd = identcmd(&btext->str[i]);                      
-		if (cmd == 0)                                       
-			continue;                                   
-								    
-		if (cmd < 0)                                        
-			return -1;                                  
-								    
-		if (writecmd(cmd, &btext->str[i], stack, lst_file)) 
-			return ERRNUM;                              
-	}
+	const char *delim = " \n";
 
+	for (int i = 0; i != btext->linecnt; i++) {
+		printf("\t\t\tparsing one str\n");
+		char *token = strtok(btext->str[i].strptr, delim);
+		while (token) {
+			printf("token is : \"%s\"\n", token);
+#include "commands.h"
+
+			return ERRNUM = SYNTAX_ERR;
+next_label:
+			token = strtok(nullptr, delim);
+		}
+	}
 	return 0;
 }
+
+#undef DEF_CMD
 
 int compile(const char *namein, const char *nameout)
 {
@@ -133,8 +74,9 @@ int compile(const char *namein, const char *nameout)
 
 	Stack stack = {};
 	StackCtor(&stack, 8);
-	
-	int err = parse(&btext, &stack, lst_file);
+
+	parse(&btext);
+	int err = process_asm(&btext, &stack, lst_file);
 	if (err)
 		return err;	
 
@@ -151,7 +93,7 @@ int compile(const char *namein, const char *nameout)
 	free(btext.buff);
 	free(btext.str);
 
-	printf("==compilation complete, lst file generated==\n");
+	printf("==compilation complete, lst file <NOT> generated==\n\n\n");
 	return 0;
 }
 
@@ -178,32 +120,36 @@ int write_bin(val_t *code, int codesize, const char *nameout)
 	return 0;
 }
 
-val_t getValue(strsize *str, int valpos)
+val_t getValue(char *token)
 {
-	assert(str);
-	assert(str->realptr);
-
-	int i = valpos;
-
-	for (int j = 0; j!= str->len; j++) {
-		if (str->realptr[j] == ';')    
-		        str->realptr[j] = '\0';
-	}
+	assert(token);
 
 	val_t val = 0; 
-						  
-	str->realptr[str->len] = '\0';              
-		  
-	char *ptr = nullptr;
+	char *ptr = NULL;
 
 	errno = 0;
 
-	//printf("%c\n", str->strptr[i]);
-	
-	val = strtod(str->realptr + i, &ptr);
+	val = strtod(token, &ptr);
 
 	if (errno != 0 || *ptr != '\0')         
 		ERRNUM = UNKNOWN_VAL_ERR;                                  
 	
 	return val;	 
+}
+
+void parse(textBuff *btext)
+{
+	if (btext == NULL || btext->str == NULL)
+		return;
+
+	for (int strn = 0; strn != btext->linecnt; strn++) {
+		int it = 0;
+		for (it = 0; it != btext->str[strn].len; it++) {
+			if (btext->str[strn].strptr[it] == ';') {
+				btext->str[strn].strptr[it] = '\0';
+				break;
+			}
+		}
+		btext->str[strn].strptr[it] = '\0';
+	}
 }

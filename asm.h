@@ -8,12 +8,10 @@
 #include <cerrno>
 #include "disasem.h"
 
-int identcmd(strsize *str);
-int writecmd(int cmd, strsize *str, Stack *stack, FILE *lstfile = NULL);
 int compile(const char *namein, const char *nameout);
-val_t getValue(strsize *str, int valpos);
+val_t getValue(char *token);
 int write_bin(val_t *code, int codesize, const char *nameout);
-int setCodeArray(Stack *stack, val_t *arr);
 void printLst(int cmd, int pos, int size, val_t val = 0, FILE *file = NULL);
-int parse(textBuff *btext, Stack *stack, FILE *file);
+int process_asm(textBuff *btext, Stack *stack, FILE *file);
+void parse(textBuff *btext);
 #endif // _ASM_H
