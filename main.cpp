@@ -15,18 +15,13 @@ int main(int argc, char **argv)
 		switch(*(argv[1])) {
 		case 'r':
 			printf("---run cpu---\n");
-			if (run_cpu("asm.bin"));
-				printf("%s\n", errmsg(ERRNUM));
+			system("./cpu");
 			break;
 		case 'c':
-			printf("---compilation---\n");
-			if (compile("_asm_in.txt", "asm.bin"))
-				printf("%s\n", errmsg(ERRNUM));
+			system("./asm");
 			break;
 		case 'd':
-			printf("---decompilation---\n");
-			if(decompile("asm.bin", "input.txt"))
-				printf("%s\n", errmsg(ERRNUM));
+			system("./dasm");
 			break;
 		default:
 			break;
@@ -40,9 +35,9 @@ int main(int argc, char **argv)
 		stat(ASM_NAME, &asm_stat);
 		
 		if (difftime(bin_stat.st_mtim.tv_sec, asm_stat.st_mtim.tv_sec) < 0)
-			system("./qasm");
+			system("./asm");
 
-		system("./qcpu");
+		system("./cpu");
 	}
 
 	if (ERRNUM)

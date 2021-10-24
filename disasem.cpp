@@ -1,11 +1,16 @@
 #include "disasem.h"
 
-#define DEF_CMD(num, name, args, ...)						\
-	case CMD_##name:							\
-		fprintf(file, #name);						\
-		for (int i = 0; i < args; i++)					\
-			fprintf(file, " %d", code[ip++]);			\
-		fprintf(file, "\n");						\
+#define DEF_CMD(num, name, args, ...)								\
+	case CMD_##name:									\
+		fprintf(dasm->file_out, #name);							\
+		for (int i = 0; i < args; i++) {						\
+			if (cmds.reg == 0)							\
+				fprintf(dasm->file_out, " %d", *(int *)(dasm->data + dasm->ip));\
+			else									\
+				fprintf(dasm->file_out, " %cx", dasm->data[dasm->ip] + 'a');	\
+			dasm->ip += sizeof(val_t);						\
+		}										\
+		fprintf(dasm->file_out, "\n");							\
 		break;
 
 
@@ -13,28 +18,29 @@ int decompile(const char *namein, const char *nameout)
 {
 	assert(namein);                         
 	assert(nameout);                        	
-					
-	FILE *file_out = open_file(nameout,"w");
-	assert(file_out);                 	
-
-	int *code = NULL;
-	int codesize = read_bin(namein, &code);
 	
-	if (codesize < 0) {
-		fclose(file_out);
+	DISASM dasm = {};
+
+	dasm.file_out = open_file(nameout,"w");
+	assert(dasm.file_out);                 	
+
+	//int *code = NULL;
+	dasm.codesize = read_bin(namein, &dasm.data);
+	
+	if (dasm.codesize < 0) {
+		fclose(dasm.file_out);
 		return ERRNUM;
 	}
 
-	int cmd_cnt = (codesize - sizeof(Hdr))/sizeof(int);
-	processDecomp(code, cmd_cnt, file_out);
+	processDecomp(&dasm);
 	
-	close_file(file_out);
-	free(code);
+	close_file(dasm.file_out);
+	free(dasm.data);
 
 	return 0;
 }
 
-int read_bin(const char *namein, int **code)
+int read_bin(const char *namein, char **code)
 {
 	assert(namein);
 	
@@ -47,12 +53,12 @@ int read_bin(const char *namein, int **code)
 		return -1;
 	}
 	
-	int codesize = getFileSize(namein); 
+	int codesize = getFileSize(namein) - sizeof(Hdr); 
 	assert(codesize >= 0);
-	*code = (int *)calloc(codesize, 1);
+	*code = (char *)calloc(codesize, 1);
 	assert(code);
 
-	fread(*code, sizeof(int), (codesize - sizeof(Hdr))/ sizeof(int), file_in);
+	fread(*code, sizeof(char), codesize, file_in);
 	
 	if (*code == NULL) {
 		ERRNUM = READ_ERR;
@@ -64,57 +70,27 @@ int read_bin(const char *namein, int **code)
 	return codesize;
 }
 
-void processDecomp(int *code, int len, FILE *file)
+void processDecomp(DISASM *dasm)
 {
-	assert(code);
-	assert(file);
+	assert(dasm->data);
+	assert(dasm->file_out);
 
-	int ip =  0;
 	int val = 0;
-	while(ip != len) {
-		switch(code[ip++]) {
-#include "commands.h"	
+	COMMANDS cmds = {};
+
+	while(dasm->ip < dasm->codesize) {
+		cmds = *(COMMANDS*)(dasm->data + dasm->ip++);
+
+		switch(cmds.cmd) {
+#include "commands.h"
 		default:                     
-			fprintf(file, "UNKNOWN CMD!!!\n");
+			fprintf(dasm->file_out, "UNKNOWN CMD!!!\n");
 			return;
 		}
 	}
 }
 
 #undef DEF_CMD
-
-//TODO DEFINES
-//TODO array
-char* cmdName(int cmd)
-{	
-	char *name = NULL;
-	switch (cmd) {
-	case CMD_PUSH:
-		name = (char *)"push";
-		break;
-	case CMD_ADD:
-		name = (char *)"add";
-		break;
-	case CMD_SUB:
-		name = (char *)"sub";
-		break;
-	case CMD_MUL:
-		name = (char *)"mul";
-		break;
-	case CMD_DIV:
-		name = (char *)"div";
-		break;
-	case CMD_OUT:
-		name = (char *)"out";
-		break;
-	case CMD_HLT:
-		name = (char *)"hlt";
-		break;
-	default:
-		return NULL; 
-	}
-	return name;
-}
 
 int checkHdr(FILE *filein)
 {

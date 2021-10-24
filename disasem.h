@@ -7,11 +7,19 @@
 #include "enum.h"
 #include <cerrno>    
 
+//TODO ???
+struct DISASM {
+	int ip;    
+	char *data;
+	FILE *file_in;
+	FILE *file_out;
+	int codesize;
+};
 
-int read_bin(const char *namein, int **code);
+int read_bin(const char *namein, char **code);
 int decompile(const char *namein, const char *nameout);
 char *cmdName(int cmd);
-void processDecomp(int *code, int len, FILE *file);
+void processDecomp(DISASM *dasm);
 
 int checkHdr(FILE *file);
 #endif

@@ -3,14 +3,27 @@
 	case CMD_##name:							\
 		printf(#name"\n");						\
 		code;								\
-		cpu.ip += (arg);						\
+		cpu.ip += (arg * sizeof(val_t));				\
 		break;
 
-Stack stack = {};
 
-int start_cpu()
+int start_cpu(CPU *cpu)
 {
-	if (StackCtor(&stack, 8))
+	assert(cpu);
+
+	if (StackCtor(&cpu->stack, 8))
+		return ERRNUM;
+
+	return NO_ERR;
+}
+
+int end_cpu(CPU *cpu)
+{
+	assert(cpu);
+
+	free(cpu->code);
+
+	if (StackDtor(&cpu->stack))
 		return ERRNUM;
 	return NO_ERR;
 }
@@ -19,29 +32,35 @@ int run_cpu(const char *namein)
 {            
 	CPU cpu = {};	
 
-	int size = read_bin(namein, &cpu.code);
+	cpu.csize = read_bin(namein, &cpu.code);
 
-	if (size < 0)
+	if (cpu.csize < 0)
 		return ERRNUM;
+
+	start_cpu(&cpu);
 	
-	cpu.csize = (size - sizeof(Hdr))/sizeof(val_t);
-	
-	start_cpu();
-	
-	while(cpu.ip != cpu.csize) { 
+	COMMANDS cmds = *(COMMANDS*)(cpu.code + cpu.ip);
+
+	while(cpu.ip < cpu.csize) {
 		cpu_dump(cpu);
-		switch(cpu.code[cpu.ip++]) {
+
+		cmds = *(COMMANDS*)(cpu.code + cpu.ip++);
+		printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
+
+		switch(cmds.cmd) {
 #include "commands.h"
 		default:
 			return ERRNUM = UNKNOWN_CMD_ERR;
 			break;
 		}
 	}
-	
-	free(cpu.code);	
-	return 0;
-}
 
+	end_cpu(&cpu);
+		
+	return ERRNUM;
+	
+}
+#undef DEF_CMD
 void cpu_dump(CPU cpu)
 {
 	assert(cpu.code);
@@ -56,7 +75,7 @@ void cpu_dump(CPU cpu)
 	printf("\n");
 
 	for (int i = 0; i != cpu.csize; i++) {
-		printf("%02x ", cpu.code[i]);
+		printf("%02x ", (unsigned char)cpu.code[i]);
 	}
 
 	printf("\n");
