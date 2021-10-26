@@ -4,11 +4,28 @@
 	case CMD_##name:									\
 		fprintf(dasm->file_out, #name);							\
 		for (int i = 0; i < args; i++) {						\
-			if (cmds.reg == 0)							\
-				fprintf(dasm->file_out, " %d", *(int *)(dasm->data + dasm->ip));\
-			else									\
+			if (cmds.ram == 1) {							\
+				if (cmds.reg == 1) {						\
+					if (cmds.imm == 1) {					\
+						fprintf(dasm->file_out, " [%d+%cx]", 		\
+							*(val_t *)(dasm->data + dasm->ip), 'a' +\
+							*(val_t *)(dasm->data + dasm->ip));	\
+							dasm->ip += sizeof(val_t);		\
+					} else {						\
+						fprintf(dasm->file_out, " [%cx]", 		\
+							'a'+ *(val_t *)(dasm->data + dasm->ip));\
+					}							\
+				} else {							\
+					fprintf(dasm->file_out, " [%d]",			\
+							*(val_t *)(dasm->data + dasm->ip));	\
+				}								\
+			} else if (cmds.reg == 0) {						\
+				fprintf(dasm->file_out, " %d", *(val_t *)(dasm->data+dasm->ip));\
+			} else	{								\
 				fprintf(dasm->file_out, " %cx", dasm->data[dasm->ip] + 'a');	\
+			}									\
 			dasm->ip += sizeof(val_t);						\
+			break;									\
 		}										\
 		fprintf(dasm->file_out, "\n");							\
 		break;
@@ -24,7 +41,6 @@ int decompile(const char *namein, const char *nameout)
 	dasm.file_out = open_file(nameout,"w");
 	assert(dasm.file_out);                 	
 
-	//int *code = NULL;
 	dasm.codesize = read_bin(namein, &dasm.data);
 	
 	if (dasm.codesize < 0) {

@@ -7,7 +7,6 @@
 #include "enum.h"
 #include <cerrno>    
 
-//TODO ???
 struct DISASM {
 	int ip;    
 	char *data;

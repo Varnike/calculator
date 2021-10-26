@@ -13,6 +13,8 @@ enum commands {
 
 const uint32_t NAME    = 0x4E4545;
 const uint32_t VERSION = 0x01020012;
+const int REGS_CNT = 5;
+const int MAX_RAM_SIZE = 1000;
 
 struct COMMANDS{
 	unsigned ram : 1;
@@ -21,11 +23,22 @@ struct COMMANDS{
 	unsigned cmd : 5;
 };
 
+/******************************
+ * Format for input arguments:*
+ * 0x1 - only numerical       *
+ * 0x2 - only reg             *
+ * 0x3 - numerical or reg     *
+ * 0x4 - only ram             *
+ * 0x6 - ram and reg          *
+ * 0x7 - ram and reg and num  *
+ * 0x8 - label name           *
+ ******************************/
 struct FORMAT{
-	unsigned num    : 1;
+	unsigned imm    : 1;
 	unsigned reg    : 1;
 	unsigned ram    : 1;
-	unsigned unused : 5;
+	unsigned label  : 1;
+	unsigned unused : 4;
 };
 struct Hdr {
 	uint32_t name;

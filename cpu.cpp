@@ -3,7 +3,6 @@
 	case CMD_##name:							\
 		printf(#name"\n");						\
 		code;								\
-		cpu.ip += (arg * sizeof(val_t));				\
 		break;
 
 
@@ -54,6 +53,7 @@ int run_cpu(const char *namein)
 			break;
 		}
 	}
+label_exit:
 
 	end_cpu(&cpu);
 		
@@ -63,6 +63,7 @@ int run_cpu(const char *namein)
 #undef DEF_CMD
 void cpu_dump(CPU cpu)
 {
+	StackDump(&cpu.stack);
 	assert(cpu.code);
 	
 	if (cpu.csize > 255)
@@ -84,4 +85,15 @@ void cpu_dump(CPU cpu)
 #if CPU_SLEEP == 1
 	getchar();
 #endif
+}
+
+val_t _get_ram(CPU *cpu, int num)
+{
+	assert(cpu);
+
+	if (num <= 0 || num >= MAX_RAM_SIZE)
+		assert(!"SEGMENTATION_FAULT");
+	sleep(0.5);
+	printf("\tGET RAM[%d] = %d\n", num, cpu->RAM[num]);
+	return cpu->RAM[num];
 }

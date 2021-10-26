@@ -35,7 +35,10 @@ const char *errmsg(int errt)
 		"Unknown command error!",
 		"Unknown value!",
 		"Wrong input file version!",
-		"Invalid file signature!"
+		"Invalid file signature!",
+		"Invalid binary data!",
+		"Error occured while reading header!",
+		"Invalid input data for assembler!"
 	};
 
         if (errt >= 0   && errt <= ERRS_CNT)

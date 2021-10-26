@@ -197,6 +197,7 @@ int StackCheck(Stack *stack)
 
 #define file stdout
 #undef file
+
 void _StackDump(Stack *stack, const char *srcfunc, const char *srcfile, const int line) {
 #if MULTIPLE_LOGS == 0
 	FILE *file = fopen("log.txt", "w");
