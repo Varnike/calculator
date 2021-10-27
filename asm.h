@@ -23,11 +23,6 @@ struct ASM {
 	int labelcnt;
 };
 
-struct LABELS {
-	_labels *label;
-	int cnt;
-};
-
 int compile(const char *namein, const char *nameout);
 val_t getValue(char *token, COMMANDS *cmds);
 int isReg(char *token);

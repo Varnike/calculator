@@ -9,8 +9,7 @@
 	case CMD_##name:                                                        \
         	printf(#name"\n");                                              \
 		code;	                                                        \
-		break;                                                            
-
+		break;
 
 int start_cpu(CPU *cpu)
 {
@@ -43,14 +42,14 @@ int run_cpu(const char *namein)
 		return ERRNUM;
 
 	start_cpu(&cpu);
-	
+
 	COMMANDS cmds = *(COMMANDS*)(cpu.code + cpu.ip);
 
 	while(cpu.ip < cpu.csize) {
-		cpu_dump(cpu);
+		//cpu_dump(cpu);
 
 		cmds = *(COMMANDS*)(cpu.code + cpu.ip++);
-		printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
+		//printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
 
 		switch(cmds.cmd) {
 #include "commands.h"
@@ -59,8 +58,8 @@ int run_cpu(const char *namein)
 			break;
 		}
 	}
-label_exit:
 
+label_exit:
 	end_cpu(&cpu);
 		
 	return ERRNUM;
@@ -105,3 +104,17 @@ val_t _get_ram(CPU *cpu, int num)
 	printf("\tGET RAM[%d] = %d\n", num, cpu->RAM[num]);
 	return cpu->RAM[num];
 }
+
+char _get_vram(CPU *cpu, int num)
+{
+	assert(cpu);
+
+	if (num < 0 || num >= MAX_VRAM_SIZE) {
+		printf("num is %d\n",num);
+		assert(!"SEGMENTATION_FAULT");
+	}
+
+	sleep(0.2);
+	return (char)cpu->VRAM[num];
+
+}	

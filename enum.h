@@ -17,7 +17,13 @@ enum commands {
 const uint32_t NAME    = 0x4E4545;
 const uint32_t VERSION = 0x01020012;
 const int REGS_CNT = 5;
-const int MAX_RAM_SIZE = 1000;
+const int MAX_RAM_SIZE  = 1000;
+/*
+ * for screen 80x24
+ */
+const int MAX_VRAM_SIZE = 1920;
+const int SCREEN_LENGHT = 80;
+const int SCREEN_HEIGHT = 20;
 const int MAX_LABELS_CNT = 20;
 
 struct COMMANDS{
@@ -37,13 +43,6 @@ struct COMMANDS{
  * 0x7 - ram and reg and num  *
  * 0x8 - label name           *
  ******************************/
-struct FORMAT{
-	unsigned imm    : 1;
-	unsigned reg    : 1;
-	unsigned ram    : 1;
-	unsigned label  : 1;
-	unsigned unused : 4;
-};
 struct Hdr {
 	uint32_t name;
 	uint32_t version;

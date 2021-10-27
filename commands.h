@@ -95,6 +95,15 @@ DEF_CMD(12, pop, 2,
 				cpu.ip += sizeof(val_t);
 			}
 		})
+DEF_CMD(13, display, 0,
+		{
+			for (int h = 0; h != SCREEN_HEIGHT; h++) {
+				for (int l = 0; l != SCREEN_LENGHT; l++) {
+					printf("%c", (GET_VRAM(l + h * l) == 0) ? '.' : '*');
+				}
+				printf("\n");
+			}
+		})
 DEF_JMP_CMD(21, jmp,
 		{
 			cpu.ip = (int)*(val_t*)(cpu.code + cpu.ip);

@@ -31,8 +31,18 @@
 {										\
 	cpu.RAM[num] = _POP;							\
 	sleep(0.5);								\
-	printf("\tSET RAM[%d] = %d\n", num, cpu.RAM[num]);				\
+	printf("\tSET RAM[%d] = %d\n", num, cpu.RAM[num]);			\
 }
+
+#define GET_VRAM(num) _get_vram(&cpu, num)
+
+#define SET_VRAM(num)								\
+{                                                                               \
+        cpu.VRAM[num] = (char)_POP;						\
+        sleep(0.2);                                                             \
+        printf("\tSET VRAM[%d] = %d\n", num, (int)cpu.RAM[num]);		\
+}
+
 #define PROCESS_CMD(cmd)							\
 {										\
 	if(cmd && ERRNUM)							\
@@ -46,7 +56,8 @@ struct CPU {
 	int ip;
 	int csize;
 	Stack stack;
-	val_t RAM[MAX_RAM_SIZE];
+	val_t RAM[MAX_RAM_SIZE + MAX_VRAM_SIZE];
+	char VRAM[MAX_VRAM_SIZE];
 	/**
 	 * Names of registers are strictly defined: 
 	 * ax = regs[0] 
@@ -57,6 +68,7 @@ struct CPU {
 	 */
 	val_t regs[REGS_CNT];
 };
+
 int run_cpu(const char *fname);
 
 int start_cpu(CPU *cpu);
@@ -64,4 +76,5 @@ int end_cpu(CPU *cpu);
 
 void cpu_dump(CPU cpu);
 val_t _get_ram(CPU *cpu, int num);
+char _get_vram(CPU *cpu, int num);
 #endif //CALCULATOR_H

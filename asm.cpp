@@ -66,11 +66,6 @@ $			ERRNUM = 0;							\
 	}										\
 	else
 
-/*
- *	
- */
-
-
 int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 {	
 	assert(btext);
@@ -79,13 +74,11 @@ int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 	assert(lst_file);
 
 	ERRNUM = 0;
-$
-$	const char *delim = " \n";
-//$	LABELS labelstr = {};
-//$	labelstr.label = (_labels *)calloc(sizeof(LABELS), MAX_LABELS_CNT);
 
-$	for (int i = 0; i != btext->linecnt; i++) {
-$		printf("parsing one str\n");
+	const char *delim = " \n";
+
+	for (int i = 0; i != btext->linecnt; i++) {
+		printf("parsing one str\n");
 		char *token = strtok(btext->str[i].strptr, delim);
 		while (token) {
 			printf("command name : \"%s\"\n", token);
@@ -112,7 +105,6 @@ $		printf("parsing one str\n");
 	}
 err_clear_buff:
 
-//	free(labelstr.label);
 	return ERRNUM;
 }
 
@@ -142,10 +134,12 @@ int compile(const char *namein, const char *nameout)
 
 	code.data = (char *)calloc(sizeof(int), btext.linecnt * 2 * sizeof(val_t));
 	assert(code.data);
-	code.label = (_labels *)calloc(sizeof(LABELS), MAX_LABELS_CNT);
+
+	code.label = (_labels *)calloc(sizeof(_labels), MAX_LABELS_CNT);
 	assert(code.label);
+
 	parse(&btext);
-	//TODO function
+	
 	process_asm(&btext, &code, lst_file);
 	if (ERRNUM)
 		goto out_free_buffer;
@@ -259,7 +253,7 @@ void parse(textBuff *btext)
 }
 
 int isReg(char *token)
-{//TODO ???
+{
 	if (token[1] == 'x' && token[2] == '\0') {
 		int regno = token[0] - 'a';
 		if (regno <= REGS_CNT)//max nomder of regs
@@ -278,8 +272,6 @@ int isRAM(char *token, COMMANDS *cmds, ASM *code)
 	assert(cmds);
 	assert(code);
 
-	//printf("RAM is token : %s\n", token);
-	
 	char check_end = 0;
 	char reg_name  = 0;
 	int imm        = 0;
@@ -353,6 +345,9 @@ static struct _labels make_label(char *name, int ip, int len)
 }
 int setLabel(char *name, const int len, const int ip, ASM *labelstr)
 {
+	assert(name);
+	assert(labelstr);
+
 	if (len >= MAX_LABELS_CNT)
 		return ERRNUM = LABEL_CNT_ERR;
 	
