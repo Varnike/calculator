@@ -5,6 +5,12 @@
 		code;								\
 		break;
 
+#define DEF_JMP_CMD(num, name, code)						\
+	case CMD_##name:                                                        \
+        	printf(#name"\n");                                              \
+		code;	                                                        \
+		break;                                                            
+
 
 int start_cpu(CPU *cpu)
 {
@@ -61,6 +67,8 @@ label_exit:
 	
 }
 #undef DEF_CMD
+#undef DEF_JMP_CMD
+
 void cpu_dump(CPU cpu)
 {
 	StackDump(&cpu.stack);

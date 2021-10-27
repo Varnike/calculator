@@ -38,7 +38,9 @@ const char *errmsg(int errt)
 		"Invalid file signature!",
 		"Invalid binary data!",
 		"Error occured while reading header!",
-		"Invalid input data for assembler!"
+		"Invalid input data for assembler!",
+		"Labels limit exceeded!",
+		"Syntax error: several labels of same name!"
 	};
 
         if (errt >= 0   && errt <= ERRS_CNT)

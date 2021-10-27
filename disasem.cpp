@@ -30,7 +30,7 @@
 		fprintf(dasm->file_out, "\n");							\
 		break;
 
-
+#define DEF_JMP_CMD(num, name, ...)
 int decompile(const char *namein, const char *nameout)
 {
 	assert(namein);                         
@@ -107,6 +107,7 @@ void processDecomp(DISASM *dasm)
 }
 
 #undef DEF_CMD
+#undef DEF_JMP_CMD
 
 int checkHdr(FILE *filein)
 {

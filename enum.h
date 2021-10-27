@@ -3,18 +3,22 @@
 
 #include <cstdint>
 
-#define DEF_CMD(num, name, ...)										\
+#define DEF_CMD(num, name, ...)									\
 	CMD_##name=(num),
 
+#define DEF_JMP_CMD(num, name, ...)								\
+	CMD_##name=(num),
 enum commands {
 #include "commands.h"
 };
 #undef DEF_CMD
+#undef DEF_JMP_CMD
 
 const uint32_t NAME    = 0x4E4545;
 const uint32_t VERSION = 0x01020012;
 const int REGS_CNT = 5;
 const int MAX_RAM_SIZE = 1000;
+const int MAX_LABELS_CNT = 20;
 
 struct COMMANDS{
 	unsigned ram : 1;
