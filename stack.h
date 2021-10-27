@@ -91,7 +91,7 @@
 #define SET_HASH ;
 
 #endif
-typedef int val_t;
+typedef double val_t;
 
 const int POISONED_MEM = 1488;
 const int POISONED_VAL = 0xDEDBEAF;

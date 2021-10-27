@@ -1,15 +1,4 @@
 #include "cpu.h"
-#define DEF_CMD(num, name, arg, code)						\
-	case CMD_##name:							\
-		printf(#name"\n");						\
-		code;								\
-		break;
-
-#define DEF_JMP_CMD(num, name, code)						\
-	case CMD_##name:                                                        \
-        	printf(#name"\n");                                              \
-		code;	                                                        \
-		break;
 
 int start_cpu(CPU *cpu)
 {
@@ -32,6 +21,19 @@ int end_cpu(CPU *cpu)
 	return NO_ERR;
 }
 
+#define DEF_CMD(num, name, arg, code)						\
+	case CMD_##name:							\
+		printf(#name"\n");						\
+		code;								\
+		break;
+
+#define DEF_JMP_CMD(num, name, code)						\
+	case CMD_##name:                                                        \
+        	printf(#name"\n");                                              \
+		code;	                                                        \
+		break;
+
+
 int run_cpu(const char *namein)
 {            
 	CPU cpu = {};	
@@ -46,13 +48,17 @@ int run_cpu(const char *namein)
 	COMMANDS cmds = *(COMMANDS*)(cpu.code + cpu.ip);
 
 	while(cpu.ip < cpu.csize) {
-		//cpu_dump(cpu);
+		cpu_dump(&cpu, stdout);
+		//reg_dump(&cpu, stdout);
+		//ram_dump(&cpu, stdout);
 
 		cmds = *(COMMANDS*)(cpu.code + cpu.ip++);
-		//printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
+		printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
 
 		switch(cmds.cmd) {
 #include "commands.h"
+#undef DEF_CMD
+#undef DEF_JMP_CMD
 		default:
 			return ERRNUM = UNKNOWN_CMD_ERR;
 			break;
@@ -65,35 +71,60 @@ label_exit:
 	return ERRNUM;
 	
 }
-#undef DEF_CMD
-#undef DEF_JMP_CMD
 
-void cpu_dump(CPU cpu)
+
+void cpu_dump(CPU *cpu, FILE *file)
 {
-	StackDump(&cpu.stack);
-	assert(cpu.code);
+	assert(file);
+
+	_StackDump(&cpu->stack, __func__, __FILE__, __LINE__);
 	
-	if (cpu.csize > 255)
-		cpu.csize = 255;
+	assert(cpu);
+	assert(cpu->code);
+	
+	//fprintf(file, "\n\n\n\n**********CPU CODE DUMP**********\n\n");
+	int size = cpu->csize;
+	if (cpu->csize > 255)
+		size = 255;
 
-	for (int i = 0; i!= cpu.csize; i++) {
-		printf("%02x ", i);
+	for (int i = 0; i!= size; i++) {
+		fprintf(file, "%02x ", i);
 	}
 
 	printf("\n");
 
-	for (int i = 0; i != cpu.csize; i++) {
-		printf("%02x ", (unsigned char)cpu.code[i]);
+	for (int i = 0; i != size; i++) {
+		fprintf(file, "%02x ", (unsigned char)cpu->code[i]);
 	}
 
-	printf("\n");
-	printf("%*s\n", cpu.ip * 3 + 1, "^");
+	fprintf(file, "\n");
+	fprintf(file, "%*s\n", cpu->ip * 3 + 1, "^");
 
 #if CPU_SLEEP == 1
 	getchar();
 #endif
 }
 
+void ram_dump(CPU *cpu, FILE *file)
+{
+	assert(file);
+
+	for (int i = 0; i != MAX_RAM_SIZE; i++) {
+		if (i % 10 == 0) 
+			printf("\n[%d] : ", i);
+
+		fprintf(file, "%d ", (int)cpu->RAM[i]);
+	}
+}
+
+void reg_dump(CPU *cpu, FILE *file)
+{
+	assert(file);
+
+	for(int i = 0; i != REGS_CNT; i++) {
+		printf("[%cx] : %d\n", ('a' + i), (int)cpu->regs[i]);
+	}
+}
 val_t _get_ram(CPU *cpu, int num)
 {
 	assert(cpu);
@@ -101,20 +132,6 @@ val_t _get_ram(CPU *cpu, int num)
 	if (num <= 0 || num >= MAX_RAM_SIZE)
 		assert(!"SEGMENTATION_FAULT");
 	sleep(0.5);
-	printf("\tGET RAM[%d] = %d\n", num, cpu->RAM[num]);
+	printf("\tGET RAM[%d] = %lg\n", num, cpu->RAM[num]);
 	return cpu->RAM[num];
-}
-
-char _get_vram(CPU *cpu, int num)
-{
-	assert(cpu);
-
-	if (num < 0 || num >= MAX_VRAM_SIZE) {
-		printf("num is %d\n",num);
-		assert(!"SEGMENTATION_FAULT");
-	}
-
-	sleep(0.2);
-	return (char)cpu->VRAM[num];
-
 }	

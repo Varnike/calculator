@@ -1,36 +1,6 @@
 #include "disasem.h"
 
-#define DEF_CMD(num, name, args, ...)								\
-	case CMD_##name:									\
-		fprintf(dasm->file_out, #name);							\
-		for (int i = 0; i < args; i++) {						\
-			if (cmds.ram == 1) {							\
-				if (cmds.reg == 1) {						\
-					if (cmds.imm == 1) {					\
-						fprintf(dasm->file_out, " [%d+%cx]", 		\
-							*(val_t *)(dasm->data + dasm->ip), 'a' +\
-							*(val_t *)(dasm->data + dasm->ip));	\
-							dasm->ip += sizeof(val_t);		\
-					} else {						\
-						fprintf(dasm->file_out, " [%cx]", 		\
-							'a'+ *(val_t *)(dasm->data + dasm->ip));\
-					}							\
-				} else {							\
-					fprintf(dasm->file_out, " [%d]",			\
-							*(val_t *)(dasm->data + dasm->ip));	\
-				}								\
-			} else if (cmds.reg == 0) {						\
-				fprintf(dasm->file_out, " %d", *(val_t *)(dasm->data+dasm->ip));\
-			} else	{								\
-				fprintf(dasm->file_out, " %cx", dasm->data[dasm->ip] + 'a');	\
-			}									\
-			dasm->ip += sizeof(val_t);						\
-			break;									\
-		}										\
-		fprintf(dasm->file_out, "\n");							\
-		break;
 
-#define DEF_JMP_CMD(num, name, ...)
 int decompile(const char *namein, const char *nameout)
 {
 	assert(namein);                         
@@ -86,6 +56,49 @@ int read_bin(const char *namein, char **code)
 	return codesize;
 }
 
+#define DEF_CMD(num, name, args, ...)								\
+	case CMD_##name:									\
+		fprintf(dasm->file_out, #name);							\
+		for (int i = 0; i < args; i++) {						\
+			if (cmds.ram == 1) {							\
+				if (cmds.reg == 1) {						\
+					if (cmds.imm == 1) {					\
+						fprintf(dasm->file_out, " [%d+%cx]", 		\
+						   (int)*(val_t *)(dasm->data + dasm->ip), 'a' +\
+						   (int)*(val_t *)(dasm->data + dasm->ip));	\
+							dasm->ip += sizeof(val_t);		\
+					} else {						\
+						fprintf(dasm->file_out, " [%cx]", 		\
+						   'a'+ (int)*(val_t *)(dasm->data + dasm->ip));\
+					}							\
+				} else {							\
+					fprintf(dasm->file_out, " [%d]",			\
+						(int)*(val_t *)(dasm->data + dasm->ip));	\
+				}								\
+				break;								\
+			} else if (cmds.reg == 0) {						\
+				fprintf(dasm->file_out," %lg",*(val_t *)(dasm->data+dasm->ip));\
+			} else	{								\
+				fprintf(dasm->file_out, " %cx",(int)dasm->data[dasm->ip] + 'a');\
+			}									\
+			dasm->ip += sizeof(val_t);						\
+			break;									\
+		}										\
+		fprintf(dasm->file_out, "\n");							\
+		break;
+
+#define DEF_JMP_CMD(num, name, ...)								\
+	case CMD_##name:									\
+		fprintf(dasm->file_out, #name);							\
+		if (num == CMD_ret) {								\
+			fprintf(dasm->file_out, "\n");						\
+			break;									\
+		}										\
+		fprintf(dasm->file_out," %02x %02x\n",(int)*(val_t *)(dasm->data+dasm->ip) & 255,\
+				((int)*(val_t *)(dasm->data+dasm->ip) / 256) & 255);		\
+		dasm->ip += sizeof(val_t);							\
+		break;
+
 void processDecomp(DISASM *dasm)
 {
 	assert(dasm->data);
@@ -99,15 +112,14 @@ void processDecomp(DISASM *dasm)
 
 		switch(cmds.cmd) {
 #include "commands.h"
+#undef DEF_CMD
+#undef DEF_JMP_CMD
 		default:                     
 			fprintf(dasm->file_out, "UNKNOWN CMD!!!\n");
 			return;
 		}
 	}
 }
-
-#undef DEF_CMD
-#undef DEF_JMP_CMD
 
 int checkHdr(FILE *filein)
 {

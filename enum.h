@@ -33,16 +33,6 @@ struct COMMANDS{
 	unsigned cmd : 5;
 };
 
-/******************************
- * Format for input arguments:*
- * 0x1 - only numerical       *
- * 0x2 - only reg             *
- * 0x3 - numerical or reg     *
- * 0x4 - only ram             *
- * 0x6 - ram and reg          *
- * 0x7 - ram and reg and num  *
- * 0x8 - label name           *
- ******************************/
 struct Hdr {
 	uint32_t name;
 	uint32_t version;

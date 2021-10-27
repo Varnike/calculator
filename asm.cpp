@@ -1,5 +1,9 @@
 #include "asm.h"
 
+static int restore_data(textBuff *btext);
+static void parse(textBuff *btext);
+static struct _labels make_label(char *name, int ip, int len);
+
 void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 {
 #if 0
@@ -26,25 +30,24 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 		int command_ip = code->ip++;						\
 		for (int i = 0; i < args; i++) {                                        \
 			token = strtok(nullptr, delim);					\
-$			if (token == NULL) {						\
+			if (token == NULL) {						\
 			       	if (i == 0)						\
 					return ERRNUM = SYNTAX_ERR;			\
 				else 							\
 					break;						\
 			}								\
-$			if (num == CMD_pop || num == CMD_push) {			\
-				int is_ram = isRAM(token, &cmds, code);			\
+			if (num == CMD_pop || num == CMD_push) {			\
+				int is_ram = setRAM(token, &cmds, code);		\
 				if (is_ram == 0)					\
 					break;						\
 				if (is_ram > 0)						\
 					return ERRNUM;					\
 			}								\
-$			ERRNUM = 0;							\
+			ERRNUM = 0;							\
 			val_t val = getValue(token, &cmds);				\
 			if (ERRNUM)							\
 				return ERRNUM;						\
 			*(val_t*)(code->data + code->ip) = val;				\
-			printf("VALUE === %d, val = %d\n", *(val_t*)(code->data + code->ip), val);\
 			code->ip += sizeof(val_t);					\
 		}                                                                       \
 		code->data[command_ip] = *(char *)&cmds;				\
@@ -84,7 +87,7 @@ int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 			printf("command name : \"%s\"\n", token);
 #include "commands.h"
 
-#undef DEF_CMD	//TODO
+#undef DEF_CMD
 #undef DEF_JMP_CMD
 			
 			/* else */{
@@ -121,16 +124,15 @@ int compile(const char *namein, const char *nameout)
         btext.file_in  = open_file(namein, "r");
 	FILE *lst_file = open_file("lst.txt", "w");
 	
-	//TODO lst
 	assert(btext.file_in);
 	assert(lst_file);
        
 	int cmd = 0;
 	ASM code = {}; 
 
-	read_from_file(&btext, namein);	
-	if (ERRNUM)
-                goto out_free_buffer;
+	read_from_file(&btext, namein);
+
+	CHECK_ERR(out_free_buffer);
 
 	code.data = (char *)calloc(sizeof(int), btext.linecnt * 2 * sizeof(val_t));
 	assert(code.data);
@@ -141,8 +143,7 @@ int compile(const char *namein, const char *nameout)
 	parse(&btext);
 	
 	process_asm(&btext, &code, lst_file);
-	if (ERRNUM)
-		goto out_free_buffer;
+	CHECK_ERR(out_free_buffer);
 	
 	printf("\n\nSECOND PASS\n\n\n");
 
@@ -150,14 +151,11 @@ int compile(const char *namein, const char *nameout)
 	code.ip = 0;
 
 	process_asm(&btext, &code, lst_file);
-	if (ERRNUM)
-	        goto out_free_buffer;
-
+	CHECK_ERR(out_free_buffer);
 
 	write_bin(&code, nameout);
-
-	if(ERRNUM)
-		goto out_free_buffer;
+	CHECK_ERR(out_free_buffer);
+	
 
 out_free_buffer:	
 	close_file(btext.file_in);
@@ -219,7 +217,7 @@ val_t getValue(char *token, COMMANDS *cmds)
 
 	if (*ptr != '\0') {
 		printf("value token is :%s\n", ptr);
-		int reg = isReg(ptr);
+		int reg = setReg(ptr);
 		if (reg >= 0) {
 			cmds->reg = 1;
 			return reg;
@@ -234,7 +232,7 @@ val_t getValue(char *token, COMMANDS *cmds)
 	return val;	 
 }
 
-void parse(textBuff *btext)
+static void parse(textBuff *btext)
 {
 	assert(btext);
 	assert(btext->str);
@@ -252,7 +250,7 @@ void parse(textBuff *btext)
 	}
 }
 
-int isReg(char *token)
+int setReg(char *token)
 {
 	if (token[1] == 'x' && token[2] == '\0') {
 		int regno = token[0] - 'a';
@@ -264,7 +262,7 @@ int isReg(char *token)
 	return -1;
 }
 
-int isRAM(char *token, COMMANDS *cmds, ASM *code)
+int setRAM(char *token, COMMANDS *cmds, ASM *code)
 {
 	if (token == NULL) 
 		return -1;
@@ -327,10 +325,10 @@ val_t getLabelIP(const char *lname, ASM *labelstr)
 					labelstr->label[i].name, 
 					labelstr->label[i].len, 
 					labelstr->label[i].ip);
-			return labelstr->label[i].ip;
+			return (val_t)labelstr->label[i].ip;
 		}
 
-	return -1;
+	return -1.0;
 }
 
 static struct _labels make_label(char *name, int ip, int len)
@@ -362,7 +360,7 @@ int setLabel(char *name, const int len, const int ip, ASM *labelstr)
 	return 0;
 }
 
-int restore_data(textBuff *btext)
+static int restore_data(textBuff *btext)
 {
 	assert(btext);
 	assert(btext->str);

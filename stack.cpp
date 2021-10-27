@@ -213,6 +213,8 @@ void _StackDump(Stack *stack, const char *srcfunc, const char *srcfile, const in
 
 	if (ERRNUM) {
 		fprintf(file,"ERROR : %s\n", errmsg(ERRNUM));
+	} else {
+		goto skip_err_print;
 	}
 
 	if (stack == NULL) {
@@ -244,13 +246,14 @@ void _StackDump(Stack *stack, const char *srcfunc, const char *srcfile, const in
 #endif
 
 	fprintf(file, "\tdata[%p]\n\t{\n", stack->data);
-
+skip_err_print:
 	if (stack->data == NULL) {
 		fprintf(file, "\t\t[0] = NULL;\n");
 	} 
 	else if (stack->data == (val_t*)POISONED_MEM) {
 		fprintf(file, "\t\t[0] = %d[POISONED];\n", POISONED_MEM);
-	} 
+	}
+
 	else {
 		for (int i = 0; i != stack->capacity; i++) {
 			fprintf(file,"\t\t*[%d] [%p] = ", i, stack->data + i);
@@ -259,6 +262,10 @@ void _StackDump(Stack *stack, const char *srcfunc, const char *srcfile, const in
 			else
 				printStackVal(stack->data[i], file);
 		}
+	}
+	if (ERRNUM == 0) {
+		fclose(file);
+		return;
 	}
 
 	fprintf(file,"\t}\n");
