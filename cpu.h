@@ -25,6 +25,8 @@
 
 #define CODE(num) *(val_t*)(cpu.code + num)
 
+#define ARG *_ARG(&cpu, &arg_val, cmds)
+
 #define CHECK_POP								\
 {										\
 	if (ERRNUM)								\
@@ -84,5 +86,5 @@ void cpu_dump(CPU *cpu, FILE *file);
 void reg_dump(CPU *cpu, FILE *file);
 
 val_t _get_ram(CPU *cpu, int num);
-
+val_t *_ARG(CPU *cpu, val_t *arg_val, COMMANDS cmds);
 #endif //CALCULATOR_H

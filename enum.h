@@ -8,10 +8,14 @@
 
 #define DEF_JMP_CMD(num, name, ...)								\
 	CMD_##name=(num),
+
+#define DEF_COND_JMP_CMD(num, name, ...)							\
+	CMD_##name=(num),
 enum commands {
 #include "commands.h"
 };
 #undef DEF_CMD
+#undef DEF_COND_JMP_CMD
 #undef DEF_JMP_CMD
 
 const uint32_t NAME    = 0x4E4545;

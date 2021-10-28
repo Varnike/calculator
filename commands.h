@@ -1,26 +1,6 @@
 DEF_CMD(1, push, 2, 
-		{//TODO function const - const p
-			if (cmds.ram == 1) {
-				int a = CODE(IP);                 
-				if (cmds.reg == 1) {
-					int reg_data = GET_REG(a);
-					if (cmds.imm == 1) {
-						int b = CODE(IP + sizeof(val_t));
-						Push(GET_RAM(b + reg_data));
-						IP += sizeof(val_t);
-					} else {
-						Push(GET_RAM(reg_data));
-					}
-				} else if (cmds.imm == 1) {
-					Push(GET_RAM(a));
-				}
-			} else if (cmds.reg == 0) {
-                                Push(CODE(IP));
-                        } else {
-				int a = CODE(IP);
-                                Push(GET_REG(a));
-				}
-			IP += sizeof(val_t);
+		{
+			Push(ARG);
 		})
 DEF_CMD(2,  add, 0, 
 		{
@@ -71,29 +51,7 @@ DEF_CMD(11, hlt, 0,
 		})
 DEF_CMD(12, pop, 2,
 		{
-			int a = *(val_t*)(cpu.code + IP);
-			if (cmds.ram == 1) {
-				if (cmds.reg == 1) {
-					int b = CODE(IP + sizeof(val_t));
-					int reg_data = GET_REG(a);
-					if (cmds.imm == 1) {
-						SET_RAM(b + reg_data);
-						IP += 2 * sizeof(val_t);
-					} else {
-						SET_RAM(reg_data);
-						IP += sizeof(val_t);	
-					}
-				} else if (cmds.imm == 1) {
-					SET_RAM(a);
-					IP += sizeof(val_t);
-				}
-			} else if (cmds.reg == 1) {
-				SET_REG(a);
-				IP += sizeof(val_t);
-			} else  {
-				_POP;
-				IP += sizeof(val_t);
-			}
+			ARG = _POP;	
 		})
 DEF_CMD(13, display, 0,
 		{
@@ -123,62 +81,19 @@ DEF_JMP_CMD(21, jmp,
 		{
 			IP = CODE(IP);
 		})
-DEF_JMP_CMD(22, ja,
-		{
-			val_t a = _POP;
-			val_t b = _POP;
-			if (a > b)
-				IP = CODE(IP);
-			else 
-				IP += sizeof(val_t);
-		})
-DEF_JMP_CMD(23, jal,
-                {
-                        val_t a = _POP;
-                        val_t b = _POP;
-                        if (a >= b)
-                                IP = CODE(IP);
-			else
-			        IP += sizeof(val_t);
 
-                })
-DEF_JMP_CMD(24, jb,
-                {
-                        val_t a = _POP;
-                        val_t b = _POP;
-                        if (a < b)
-                                IP = CODE(IP);
-			else
-			        IP += sizeof(val_t);
-		})
-DEF_JMP_CMD(25, jbl,
-                {
-                        val_t a = _POP;
-                        val_t b = _POP;
-                        if (a <= b)
-                                IP = CODE(IP);
-			else
-			        IP += sizeof(val_t);
-                })
-DEF_JMP_CMD(26, je,
-                {
-                        val_t a = _POP;
-                        val_t b = _POP;
-                        if (a == b)
-                                IP = CODE(IP);
-			else
-			        IP += sizeof(val_t);
-                })
-DEF_JMP_CMD(27, jne,
-                {
-                        val_t a = _POP;
-                        val_t b = _POP;
-                        if (a != b)
-                                IP = CODE(IP);
-			else
-			        IP += sizeof(val_t);
+DEF_COND_JMP_CMD(22, ja, > )
 
-                })
+DEF_COND_JMP_CMD(23, jal, >=)
+
+DEF_COND_JMP_CMD(24, jb,  < )
+
+DEF_COND_JMP_CMD(25, jbl, <=)
+
+DEF_COND_JMP_CMD(26, je,  ==)
+
+DEF_COND_JMP_CMD(27, jne, !=)
+	
 DEF_JMP_CMD(28, call,
 		{
 			Push(IP + sizeof(val_t));

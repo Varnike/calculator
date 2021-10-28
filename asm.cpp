@@ -69,6 +69,8 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 	}										\
 	else
 
+#define DEF_COND_JMP_CMD(num, name, ...) DEF_JMP_CMD(num, name)
+
 int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 {	
 	assert(btext);
@@ -88,6 +90,7 @@ int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 #include "commands.h"
 
 #undef DEF_CMD
+#undef DEF_COND_JMP_CMD
 #undef DEF_JMP_CMD
 			
 			/* else */{
@@ -96,18 +99,16 @@ int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 					ERRNUM = 0;
 					setLabel(token, len, code->ip, code);
 					if (ERRNUM)
-						goto err_clear_buff;
+						return ERRNUM;
 				} else {
-					ERRNUM = SYNTAX_ERR;
-					goto err_clear_buff;
+					return ERRNUM = SYNTAX_ERR;
 				}
 			}
 
 			token = strtok(nullptr, delim);
 		}
 	}
-err_clear_buff://TODO
-
+	
 	return ERRNUM;
 }
 

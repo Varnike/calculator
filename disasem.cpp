@@ -99,6 +99,7 @@ int read_bin(const char *namein, char **code)
 		dasm->ip += sizeof(val_t);							\
 		break;
 
+#define DEF_COND_JMP_CMD(num, name, ...) DEF_JMP_CMD(num, name)
 void processDecomp(DISASM *dasm)
 {
 	assert(dasm->data);
@@ -113,6 +114,7 @@ void processDecomp(DISASM *dasm)
 		switch(cmds.cmd) {
 #include "commands.h"
 #undef DEF_CMD
+#undef DEF_COND_JMP_CMD
 #undef DEF_JMP_CMD
 		default:                     
 			fprintf(dasm->file_out, "UNKNOWN CMD!!!\n");
