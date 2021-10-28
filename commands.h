@@ -1,5 +1,5 @@
 DEF_CMD(1, push, 2, 
-		{	
+		{//TODO function const - const p
 			if (cmds.ram == 1) {
 				int a = CODE(IP);                 
 				if (cmds.reg == 1) {
@@ -104,6 +104,21 @@ DEF_CMD(13, display, 0,
 				printf("\n");
 			}
 		})
+DEF_CMD(14, sin, 0,
+		{
+			Push(sin(_POP));
+		})
+
+DEF_CMD(15, cos, 0,
+                {
+                        Push(cos(_POP));
+                })
+
+DEF_CMD(16, sqrt, 0,
+		{
+			Push(sqrt(_POP));
+		})
+
 DEF_JMP_CMD(21, jmp,
 		{
 			IP = CODE(IP);

@@ -22,7 +22,7 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 	}
 #endif
 }
-
+//TODO FUNCTION!
 #define DEF_CMD(num, name, args, ...)							\
 	if (strcmp(token, #name) == 0) {						\
 		COMMANDS cmds = {};							\
@@ -106,7 +106,7 @@ int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 			token = strtok(nullptr, delim);
 		}
 	}
-err_clear_buff:
+err_clear_buff://TODO
 
 	return ERRNUM;
 }

@@ -48,7 +48,7 @@ int run_cpu(const char *namein)
 	COMMANDS cmds = *(COMMANDS*)(cpu.code + cpu.ip);
 
 	while(cpu.ip < cpu.csize) {
-		cpu_dump(&cpu, stdout);
+		//cpu_dump(&cpu, stdout);
 		//reg_dump(&cpu, stdout);
 		//ram_dump(&cpu, stdout);
 

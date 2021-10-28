@@ -2,8 +2,8 @@
 #define DISASEM_H
 
 #include <cassert>   
-#include "onegin.h"  
-#include "stack.h"   
+#include "includes/onegin.h"  
+#include "includes/stack.h"   
 #include "enum.h"
 #include <cerrno>    
 

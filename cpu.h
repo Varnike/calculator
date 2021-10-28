@@ -2,11 +2,12 @@
 #define CALCULATOR_H
 
 #include <unistd.h>
-#include "stack.h"
+#include "includes/stack.h"
 #include <cerrno>
-#include "onegin.h"
+#include "includes/onegin.h"
 #include "enum.h"
 #include "disasem.h"
+#include "math.h"
 
 #define Push(val)								\
 {										\
