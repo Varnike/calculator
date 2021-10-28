@@ -1,0 +1,8 @@
+		*[0] [0x55a4a687b4a8] = POISONED
+		*[1] [0x55a4a687b4b0] = POISONED
+		*[2] [0x55a4a687b4b8] = POISONED
+		*[3] [0x55a4a687b4c0] = POISONED
+		*[4] [0x55a4a687b4c8] = POISONED
+		*[5] [0x55a4a687b4d0] = POISONED
+		*[6] [0x55a4a687b4d8] = POISONED
+		*[7] [0x55a4a687b4e0] = 0.000000
