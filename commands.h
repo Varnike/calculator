@@ -42,7 +42,7 @@ DEF_CMD(10, out, 0,
 		{
 			val_t a = _POP;
 			CHECK_POP;
-			printf("out: %lg\n", a);//
+			printf("\n\n\nout: %lg\n\n\n", a);//
 		})
 
 DEF_CMD(11, hlt, 0, 
@@ -57,7 +57,7 @@ DEF_CMD(13, display, 0,
 		{
 			for (int h = 0; h != SCREEN_HEIGHT; h++) {
 				for (int l = 0; l != SCREEN_LENGHT; l++) {
-					printf("%c", ((int)GET_VRAM(l + h * l) == 0) ? '.' : '*');
+					printf("%c", ((int)GET_VRAM(l + h * SCREEN_LENGHT) == 0) ? ' ' : '#');
 				}
 				printf("\n");
 			}
@@ -104,4 +104,4 @@ DEF_JMP_CMD(29, ret,
 			int a = _POP;
 			IP = a;
 		})
-
+ 

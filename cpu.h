@@ -39,7 +39,7 @@
 {										\
 	cpu.RAM[num] = _POP;							\
 	sleep(0.5);								\
-	printf("\tSET RAM[%d] = %lg\n", num, cpu.RAM[num]);			\
+	/*printf("\tSET RAM[%d] = %lg\n", num, cpu.RAM[num]);*/			\
 }
 
 #define GET_VRAM(num) _get_ram(&cpu, num + MAX_RAM_SIZE)
@@ -47,8 +47,8 @@
 #define SET_VRAM(num)								\
 {                                                                               \
         cpu.RAM[num + MAX_RAM_SIZE] = _POP;					\
-        sleep(0.2);                                                             \
-        printf("\tSET VRAM[%d] = %lg\n", num, cpu.RAM[num]);			\
+        sleep(1);                                                               \
+        /*printf("\tSET VRAM[%d] = %lg\n", num, cpu.RAM[num]);*/		\
 }
 
 #define PROCESS_CMD(cmd)							\

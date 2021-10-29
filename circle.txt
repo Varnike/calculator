@@ -1,0 +1,109 @@
+push 0.5
+pop [5]
+
+in
+pop cx
+
+push cx
+pop [3]
+
+push cx
+push 1.5
+mul
+pop [4]
+
+push [3]
+pop bx
+
+push [4]
+push -1
+mul
+pop ax
+
+jmp while1
+
+end:
+	display
+	hlt
+
+while1:
+	push [3]
+	push -1
+	mul
+	push bx
+	jb end:	
+	
+	push [4]
+	push -1
+	mul
+	pop ax
+	
+	while2:
+		push [4]
+		push ax
+		ja cont
+		
+		call pth
+		push dx
+		push cx
+		jbl skip
+		call draw
+		skip:
+		
+		push ax
+		push 1
+		add
+		pop ax
+		
+	jmp while2
+cont:
+	
+	push bx
+	push -1
+	add
+	pop bx
+	jmp while1
+
+draw:
+	push 20
+	push bx
+	push cx
+	add
+	mul
+	push ax
+	push cx
+	add
+	add
+	push 100
+	add
+	
+	pop dx
+	push dx
+	out
+	
+	push 1
+
+	pop [dx]
+ret
+
+pth:
+	push ax
+	push ax
+	mul
+	
+	push bx
+	push bx
+	mul
+	
+	add
+	sqrt
+	
+	push ax
+	push bx
+	out
+	out
+	pop dx
+	push dx
+	out
+ret
+

@@ -21,12 +21,12 @@ enum commands {
 const uint32_t NAME    = 0x4E4545;
 const uint32_t VERSION = 0x01020012;
 const int REGS_CNT = 5;
-const int MAX_RAM_SIZE  = 1000;
+const int MAX_RAM_SIZE  = 100;
 /*
- * for screen 80x24
+ * for screen 20x20
  */
-const int MAX_VRAM_SIZE = 1920;
-const int SCREEN_LENGHT = 80;
+const int MAX_VRAM_SIZE = 400;
+const int SCREEN_LENGHT = 20;
 const int SCREEN_HEIGHT = 20;
 const int MAX_LABELS_CNT = 20;
 

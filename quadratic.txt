@@ -1,0 +1,120 @@
+in
+pop ax
+in
+pop bx
+in
+pop cx
+
+push 0
+push ax
+
+call inf_sol
+call no_sol
+call linear
+call quadratic
+
+hlt
+
+inf_sol:
+	push ax
+	push 0
+	jne inf_end
+	
+	push bx
+	push 0
+	jne inf_end
+
+	push cx
+	push 0
+	jne inf_end
+
+	push 8
+	push 8
+	push 8
+	out
+	out
+	out
+	hlt
+inf_end:
+ret
+
+no_sol:
+	push bx
+	push 0
+	jne nosol_end
+	
+	jmp nosol_out
+	hlt
+nosol_end:
+ret
+
+linear:
+	push ax
+	push 0
+	jne lin_end
+
+	push bx
+	push cx
+	push -1
+	mul
+	div
+	out
+	hlt
+lin_end:
+ret
+
+quadratic:
+	call discr
+	
+	push 2
+	push ax
+	mul
+	push bx
+	push dx
+	sqrt
+	sub
+	div
+	out
+	
+	push 2
+	push ax
+	mul
+	push bx
+	push dx
+	sqrt
+	push -1
+	mul
+	sub
+	div
+	out
+	hlt
+ret
+
+discr:
+	push 4
+	push ax
+	push cx
+	mul
+	mul
+	push bx
+	push bx
+	mul
+	sub
+	
+	pop dx
+	push dx
+	out
+	push dx
+	push 0
+	ja nosol_out
+	ret
+
+	
+nosol_out:
+	push 0
+	push 0
+	push 0
+	out
+	out
+	out
+	hlt

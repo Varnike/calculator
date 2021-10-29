@@ -3,6 +3,7 @@
 static int restore_data(textBuff *btext);
 static void parse(textBuff *btext);
 static struct _labels make_label(char *name, int ip, int len);
+static int process_args(const int args, COMMANDS *cmds, ASM *code, char *token);
 
 void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 {
@@ -22,34 +23,14 @@ void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
 	}
 #endif
 }
-//TODO FUNCTION!
+
 #define DEF_CMD(num, name, args, ...)							\
 	if (strcmp(token, #name) == 0) {						\
 		COMMANDS cmds = {};							\
 		cmds.cmd = num;								\
 		int command_ip = code->ip++;						\
-		for (int i = 0; i < args; i++) {                                        \
-			token = strtok(nullptr, delim);					\
-			if (token == NULL) {						\
-			       	if (i == 0)						\
-					return ERRNUM = SYNTAX_ERR;			\
-				else 							\
-					break;						\
-			}								\
-			if (num == CMD_pop || num == CMD_push) {			\
-				int is_ram = setRAM(token, &cmds, code);		\
-				if (is_ram == 0)					\
-					break;						\
-				if (is_ram > 0)						\
-					return ERRNUM;					\
-			}								\
-			ERRNUM = 0;							\
-			val_t val = getValue(token, &cmds);				\
-			if (ERRNUM)							\
-				return ERRNUM;						\
-			*(val_t*)(code->data + code->ip) = val;				\
-			code->ip += sizeof(val_t);					\
-		}                                                                       \
+		if(process_args(args, &cmds, code, token))				\
+			return ERRNUM;							\
 		code->data[command_ip] = *(char *)&cmds;				\
 	}										\
 	else
@@ -305,7 +286,8 @@ int setRAM(char *token, COMMANDS *cmds, ASM *code)
 			cmds->ram = 1;
 			cmds->reg = 1;
 
-			*(val_t*)(code->data + code->ip + sizeof(val_t)) = (reg_name - 'a');
+			*(val_t*)(code->data + code->ip) = (reg_name - 'a');
+			
 			code->ip += sizeof(val_t);
 
 			return 0;
@@ -375,4 +357,39 @@ static int restore_data(textBuff *btext)
 	}
 
 	return 0;
+}
+
+int process_args(const int args, COMMANDS *cmds, ASM *code, char *token)
+{
+	for (int i = 0; i < args; i++) {
+		token = strtok(nullptr, " \n");
+		
+		if (token == NULL) {
+			if (i == 0)
+				return ERRNUM = SYNTAX_ERR;
+			else
+				break;
+		}
+
+		if (cmds->cmd == CMD_pop || cmds->cmd == CMD_push) {
+			int is_ram = setRAM(token, cmds, code);
+			
+			if (is_ram == 0)
+				break;
+			
+			if (is_ram > 0)
+				return ERRNUM;
+		}
+
+		ERRNUM = 0;
+		val_t val = getValue(token, cmds);
+		
+		if (ERRNUM)
+			return ERRNUM;
+
+		*(val_t*)(code->data + code->ip) = val;
+		code->ip += sizeof(val_t);
+	}
+
+	return 0;	
 }

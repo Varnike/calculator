@@ -94,7 +94,6 @@ void cpu_dump(CPU *cpu, FILE *file)
 	assert(cpu);
 	assert(cpu->code);
 	
-	//fprintf(file, "\n\n\n\n**********CPU CODE DUMP**********\n\n");
 	int size = cpu->csize;
 	if (cpu->csize > 255)
 		size = 255;
@@ -141,25 +140,27 @@ val_t _get_ram(CPU *cpu, int num)
 {
 	assert(cpu);
 
-	if (num <= 0 || num >= MAX_RAM_SIZE)
+	if (num <= 0 || num >= (MAX_RAM_SIZE + MAX_VRAM_SIZE))
 		assert(!"SEGMENTATION_FAULT");
-	sleep(0.5);
-	printf("\tGET RAM[%d] = %lg\n", num, cpu->RAM[num]);
+	sleep(0);
+		
 	return cpu->RAM[num];
 }
 
 val_t *_ARG(CPU *cpu, val_t *arg_val, COMMANDS cmds)
 {
 	if (cmds.ram == 1) {
-		int a = *(val_t*)(cpu->code + cpu->ip);
+		int a = (int)*(val_t*)(cpu->code + cpu->ip);
+		printf("a is %d\n", a);
 		if (cmds.reg == 1) {
-			int b = cpu->code[cpu->ip + sizeof(val_t)];
-			int reg_data = cpu->regs[a];
-			if (cmds.imm == 1) {             
+			int reg_data = (int)cpu->regs[a];
+			if (cmds.imm == 1) {
+		   		int b = cpu->code[cpu->ip + sizeof(val_t)];		
 				cpu->ip += 2 * sizeof(val_t);
 				return (cpu->RAM + b + reg_data);
 			} else {
 				cpu->ip += sizeof(val_t);
+				printf("REG DATA[%d] is %d\n", a, reg_data);
 				return (cpu->RAM + reg_data);
 			}                                
 		} else if (cmds.imm == 1) {
@@ -168,6 +169,7 @@ val_t *_ARG(CPU *cpu, val_t *arg_val, COMMANDS cmds)
 		}
 	} else if (cmds.reg == 1){
 		int a = *(val_t*)(cpu->code + cpu->ip);
+		printf("a is %d\n", a);
 		cpu->ip += sizeof(val_t);
 		return (cpu->regs + a);
 	} else {
