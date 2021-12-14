@@ -11,7 +11,7 @@
 
 #define CHECK_ERR(err_label) {if (ERRNUM) goto err_label;}
 
-const int MAX_LABEL_LEN = 20;
+const int MAX_LABEL_LEN = 50;
 
 struct _labels {
         char *name;
@@ -31,7 +31,6 @@ val_t getValue(char *token, COMMANDS *cmds);
 int setReg(char *token);
 int setRAM(char *token, COMMANDS *cmds, ASM *code);
 int write_bin(ASM *code, const char *nameout);
-void printLst(int cmd, int pos, int size, val_t val = 0, FILE *file = NULL);
 int process_asm(textBuff *btext, ASM *code, FILE *file);
 val_t getLabelIP(const char *name, ASM *label);
 int setLabel(char *name, const int len, const int ip, ASM *label);

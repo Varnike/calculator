@@ -5,52 +5,6 @@ static void parse(textBuff *btext);
 static struct _labels make_label(char *name, int ip, int len);
 static int process_args(const int args, COMMANDS *cmds, ASM *code, char *token);
 
-void printLst(int cmd, int pos, int size, val_t val, FILE *lstfile)
-{
-#if 0
-	if (!lstfile)
-		lstfile = NULL;
-//(char*)(&num)//TODO
-	if (cmd == CMD_PUSH) {
-		
-		fprintf(lstfile, "%04x\t\t%s %d\t\t%02x%02x %02x%02x\n", (pos - 2) * size, 
-				cmdName(cmd), val, cmd & 255, (cmd / 256) & 255, 
-				val & 255, (val / 256) & 255);	
-	}
-	else {
-		fprintf(lstfile, "%04x\t\t%s\t\t%02x%02x\n", (pos - 1) *size, cmdName(cmd), 
-				cmd & 255, (cmd / 256) & 255);
-	}
-#endif
-}
-
-#define DEF_CMD(num, name, args, ...)							\
-	if (strcmp(token, #name) == 0) {						\
-		COMMANDS cmds = {};							\
-		cmds.cmd = num;								\
-		int command_ip = code->ip++;						\
-		if(process_args(args, &cmds, code, token))				\
-			return ERRNUM;							\
-		code->data[command_ip] = *(char *)&cmds;				\
-	}										\
-	else
-
-#define DEF_JMP_CMD(num, name, ...)							\
-	if (strcmp(token, #name) == 0) {						\
-		COMMANDS cmds = {};							\
-		cmds.cmd = num;								\
-		code->data[code->ip++] = *(char*)&cmds;					\
-		if (num != CMD_ret) {							\
-			char *label_name = NULL;					\
-			token = strtok(nullptr, "\n");					\
-			printf("TOKEN IS %s\n",token);					\
-			*(val_t*)(code->data + code->ip) =  getLabelIP(token, code);	\
-			code->ip += sizeof(val_t);					\
-		}									\
-	}										\
-	else
-
-#define DEF_COND_JMP_CMD(num, name, ...) DEF_JMP_CMD(num, name)
 
 int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 {	
@@ -68,6 +22,34 @@ int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 		char *token = strtok(btext->str[i].strptr, delim);
 		while (token) {
 			printf("command name : \"%s\"\n", token);
+#define DEF_CMD(num, name, args, ...)							\
+	if (strcmp(token, #name) == 0) {						\
+		COMMANDS cmds = {};							\
+		cmds.cmd = num;								\
+		int command_ip = code->ip++;						\
+		if(process_args(args, &cmds, code, token))				\
+			return ERRNUM;							\
+		code->data[command_ip] = *(char *)&cmds;				\
+	}										\
+	else
+
+#define DEF_JMP_CMD(num, name, ...)							\
+	if (strcmp(token, #name) == 0) {						\
+		COMMANDS cmds = {};							\
+		cmds.cmd = num;								\
+		code->data[code->ip++] = *(char*)&cmds;					\
+		if (num != CMD_ret) {							\
+			token = strtok(nullptr, "\n");					\
+			printf("TOKEN IS %s\n",token);					\
+			*(val_t*)(code->data + code->ip) =  getLabelIP(token, code);	\
+			code->ip += (int)sizeof(val_t);					\
+		}									\
+	}										\
+	else
+
+
+#define DEF_COND_JMP_CMD(num, name, ...) DEF_JMP_CMD(num, name)
+
 #include "commands.h"
 
 #undef DEF_CMD
@@ -75,8 +57,8 @@ int process_asm(textBuff *btext, ASM *code, FILE *lst_file)
 #undef DEF_JMP_CMD
 			
 			/* else */{
-				int len = strlen(token);
-				if (token[len-1] == ':') {
+				int len = (int)strlen(token);
+				if (len >= 1 && token[len-1] == ':') {
 					ERRNUM = 0;
 					setLabel(token, len, code->ip, code);
 					if (ERRNUM)
@@ -109,14 +91,13 @@ int compile(const char *namein, const char *nameout)
 	assert(btext.file_in);
 	assert(lst_file);
        
-	int cmd = 0;
 	ASM code = {}; 
 
 	read_from_file(&btext, namein);
 
 	CHECK_ERR(out_free_buffer);
 
-	code.data = (char *)calloc(sizeof(int), btext.linecnt * 2 * sizeof(val_t));
+	code.data = (char *)calloc(sizeof(int), (unsigned)btext.linecnt * 2 * sizeof(val_t));
 	assert(code.data);
 
 	code.label = (_labels *)calloc(sizeof(_labels), MAX_LABELS_CNT);
@@ -164,14 +145,14 @@ int write_bin(ASM *code, const char *nameout)
 	ERRNUM = 0;
 	Hdr header = {NAME, VERSION};
 
-	int wrote = fwrite(&header, sizeof(Hdr), 1, file_out);
+	size_t wrote = fwrite(&header, sizeof(Hdr), 1, file_out);
 	if (wrote != 1) {
         	ERRNUM = WRITE_ERR;
 		goto out_close_file;
 	}
 	
-	wrote = fwrite(code->data, sizeof(char), code->ip, file_out);	
-	if (wrote != code->ip) {
+	wrote = fwrite(code->data, sizeof(char), (size_t)code->ip, file_out);	
+	if (wrote != (size_t)code->ip) {
 		ERRNUM = WRITE_ERR;
 		goto out_close_file;
 	}
@@ -255,16 +236,17 @@ int setRAM(char *token, COMMANDS *cmds, ASM *code)
 	char check_end = 0;
 	char reg_name  = 0;
 	int imm        = 0;
-
-	if (sscanf(token, "[%d+%cx%c", &imm, &reg_name, &check_end) == 3 && check_end == ']') {
+	
+	printf("\n!!! %s \n\n", token);
+	if (sscanf(token, "[%cx+%d%c", &reg_name, &imm, &check_end) == 3 && check_end == ']') {
 		if (reg_name - 'a' >= 0 && reg_name - 'a' <= REGS_CNT) {
 			cmds->reg = 1;
 			cmds->imm = 1;
 			cmds->ram = 1;
 
 			*(val_t*)(code->data + code->ip) = (reg_name - 'a');
-		        *(val_t*)(code->data + code->ip + sizeof(val_t)) = imm;
-			code->ip += 2 * sizeof(val_t);
+		        *(val_t*)(code->data + code->ip + (int)sizeof(val_t)) = imm;
+			code->ip += 2 * (int)sizeof(val_t);
 			
 			return 0;
 		} else {
@@ -278,7 +260,7 @@ int setRAM(char *token, COMMANDS *cmds, ASM *code)
 		cmds->imm = 1;
 		printf("<<\t%d\t>>\n", code->ip);
 		*(val_t*)(code->data + code->ip) = (val_t)imm;
-		code->ip += sizeof(val_t);
+		code->ip += (int)sizeof(val_t);
 		
 		return 0;
 	} else if (sscanf(token, "[%cx%c",  &reg_name, &check_end) && check_end == ']') {
@@ -288,7 +270,7 @@ int setRAM(char *token, COMMANDS *cmds, ASM *code)
 
 			*(val_t*)(code->data + code->ip) = (reg_name - 'a');
 			
-			code->ip += sizeof(val_t);
+			code->ip += (int)sizeof(val_t);
 
 			return 0;
 		} else {
@@ -302,7 +284,7 @@ int setRAM(char *token, COMMANDS *cmds, ASM *code)
 val_t getLabelIP(const char *lname, ASM *labelstr)
 {
 	for (int i = 0; i != labelstr->labelcnt; i++)
-		if (strncmp(lname, labelstr->label[i].name, labelstr->label[i].len - 1) == 0) {
+		if (strncmp(lname, labelstr->label[i].name, (unsigned)labelstr->label[i].len - 1) == 0) {
 			printf("LABEL no [%d] FOUND: name : %s, len : %d, ip : %d\n", 
 					i,
 					labelstr->label[i].name, 
@@ -388,7 +370,7 @@ int process_args(const int args, COMMANDS *cmds, ASM *code, char *token)
 			return ERRNUM;
 
 		*(val_t*)(code->data + code->ip) = val;
-		code->ip += sizeof(val_t);
+		code->ip += (int)sizeof(val_t);
 	}
 
 	return 0;	

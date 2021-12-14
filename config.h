@@ -30,4 +30,14 @@
  */
 #define CPU_SLEEP 1
 
+const int REGS_CNT = 5;
+const int MAX_RAM_SIZE  = 100;
+/*
+ * for screen 20x20           
+ */
+const int MAX_VRAM_SIZE = 500;
+const int SCREEN_LENGHT = 20;
+const int SCREEN_HEIGHT = 20;
+const int MAX_LABELS_CNT = 100;
+
 #endif

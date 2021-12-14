@@ -23,6 +23,8 @@
 
 #define IP cpu.ip
 
+#define SIZEOF (int)sizeof(val_t)
+
 #define CODE(num) *(val_t*)(cpu.code + num)
 
 #define ARG *_ARG(&cpu, &arg_val, cmds)
@@ -37,6 +39,8 @@
 
 #define SET_RAM(num)								\
 {										\
+	if (num <= 0 || num >= (MAX_RAM_SIZE + MAX_VRAM_SIZE -1))		\
+        	assert(!"SEGMENTATION_FAULT");					\
 	cpu.RAM[num] = _POP;							\
 	sleep(0.5);								\
 	/*printf("\tSET RAM[%d] = %lg\n", num, cpu.RAM[num]);*/			\
@@ -46,6 +50,9 @@
 
 #define SET_VRAM(num)								\
 {                                                                               \
+	if (num <= 0 || num >= (MAX_RAM_SIZE + MAX_VRAM_SIZE - 1)) {		\
+		assert(!"SEGMENTATION_FAULT");					\
+	}									\
         cpu.RAM[num + MAX_RAM_SIZE] = _POP;					\
         sleep(1);                                                               \
         /*printf("\tSET VRAM[%d] = %lg\n", num, cpu.RAM[num]);*/		\

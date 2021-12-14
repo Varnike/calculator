@@ -53,6 +53,6 @@ int read_from_file(textBuff *btext, const char* name_in)
                 perror(errmsg(ERRNUM));
 		return -1;
         }
-
+	
 	return 0;
 }

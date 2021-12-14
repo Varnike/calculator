@@ -20,15 +20,6 @@ enum commands {
 
 const uint32_t NAME    = 0x4E4545;
 const uint32_t VERSION = 0x01020012;
-const int REGS_CNT = 5;
-const int MAX_RAM_SIZE  = 100;
-/*
- * for screen 20x20
- */
-const int MAX_VRAM_SIZE = 400;
-const int SCREEN_LENGHT = 20;
-const int SCREEN_HEIGHT = 20;
-const int MAX_LABELS_CNT = 20;
 
 struct COMMANDS{
 	unsigned ram : 1;

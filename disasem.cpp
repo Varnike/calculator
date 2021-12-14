@@ -41,7 +41,7 @@ int read_bin(const char *namein, char **code)
 	
 	int codesize = getFileSize(namein) - sizeof(Hdr); 
 	assert(codesize >= 0);
-	*code = (char *)calloc(codesize, 1);
+	*code = (char *)calloc((codesize / 8 + 1)*8, 1);
 	assert(code);
 
 	fread(*code, sizeof(char), codesize, file_in);
@@ -66,7 +66,7 @@ int read_bin(const char *namein, char **code)
 						fprintf(dasm->file_out, " [%d+%cx]", 		\
 						   (int)*(val_t *)(dasm->data + dasm->ip), 'a' +\
 						   (int)*(val_t *)(dasm->data + dasm->ip));	\
-							dasm->ip += sizeof(val_t);		\
+							dasm->ip += (int)sizeof(val_t);		\
 					} else {						\
 						fprintf(dasm->file_out, " [%cx]", 		\
 						   'a'+ (int)*(val_t *)(dasm->data + dasm->ip));\
@@ -81,7 +81,7 @@ int read_bin(const char *namein, char **code)
 			} else	{								\
 				fprintf(dasm->file_out, " %cx",(int)dasm->data[dasm->ip] + 'a');\
 			}									\
-			dasm->ip += sizeof(val_t);						\
+			dasm->ip += (int)sizeof(val_t);						\
 			break;									\
 		}										\
 		fprintf(dasm->file_out, "\n");							\
@@ -94,9 +94,9 @@ int read_bin(const char *namein, char **code)
 			fprintf(dasm->file_out, "\n");						\
 			break;									\
 		}										\
-		fprintf(dasm->file_out," %02x %02x\n",(int)*(val_t *)(dasm->data+dasm->ip) & 255,\
-				((int)*(val_t *)(dasm->data+dasm->ip) / 256) & 255);		\
-		dasm->ip += sizeof(val_t);							\
+		fprintf(dasm->file_out," %02x %02x\n",(unsigned)*(val_t *)(dasm->data+dasm->ip) & 255,\
+				((unsigned)*(val_t *)(dasm->data+dasm->ip) / 256) & 255);	\
+		dasm->ip += (int)sizeof(val_t);							\
 		break;
 
 #define DEF_COND_JMP_CMD(num, name, ...) DEF_JMP_CMD(num, name)

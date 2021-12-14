@@ -1,30 +1,48 @@
-in
-pop ax
-push 1
-pop bx
-push 1
-pop cx
-
-call factorial
-push cx
-out
+	in
+	pop [bx+0]
+	push 12.000000
+	pop [bx+1]
+	push 3.000000
+	pop [bx+2]
+	push 4.000000
+	pop [bx+3]	
+	push [bx+0]
+	push [bx+1]
+	je relt0x5642a5e87f30
+	push 0
+	jmp rels0x5642a5e87f30
+relt0x5642a5e87f30:
+	push 1
+rels0x5642a5e87f30:
+	push 0
+	jne if_t0x5642a5e87e70:
+	push 8.000000
+	pop [bx+0]
+	push [bx+0]
+	out
+	jmp if_e0x5642a5e87e70
+if_t0x5642a5e87e70:
+while0x5642a5e88070:
+	push [bx+0]
+	push 2.000000
+	ja relt0x5642a5e88330
+	push 0
+	jmp rels0x5642a5e88330
+relt0x5642a5e88330:
+	push 1
+rels0x5642a5e88330:
+	push 0
+	jne wskip0x5642a5e88070
+	jmp wend0x5642a5e88070
+wskip0x5642a5e88070:
+	push [bx+0]
+	push 1.000000
+	sub
+	pop [bx+0]
+	push [bx+0]
+	out
+	jmp while0x5642a5e88070
+wend0x5642a5e88070:
+if_e0x5642a5e87e70:
 hlt
 
-factorial:
-        push ax
-        push bx
-        jal end_function
-
-        push cx
-        push bx
-        push 1
-        add
-        mul
-        pop cx
-        push bx
-        push 1
-        add
-        pop bx
-        call factorial
-end_function:
-        ret

@@ -21,28 +21,6 @@ int end_cpu(CPU *cpu)
 	return NO_ERR;
 }
 
-#define DEF_CMD(num, name, arg, code)						\
-	case CMD_##name:							\
-		printf(#name"\n");						\
-		code;								\
-		break;
-
-#define DEF_JMP_CMD(num, name, code)						\
-	case CMD_##name:                                                        \
-        	printf(#name"\n");                                              \
-		code;	                                                        \
-		break;
-
-#define DEF_COND_JMP_CMD(num, name, cond)					\
-	case CMD_##name:							\
-		printf(#name"\n");						\
-		arg_val = _POP;							\
-		/*val_t b = _POP;*/						\
-		if (arg_val cond _POP)						\
-			IP = CODE(IP);						\
-		else 								\
-			IP += sizeof(val_t);					\
-		break;
 
 int run_cpu(const char *namein)
 {            
@@ -61,12 +39,36 @@ int run_cpu(const char *namein)
 	while(cpu.ip < cpu.csize) {
 		//cpu_dump(&cpu, stdout);
 		//reg_dump(&cpu, stdout);
-		//ram_dump(&cpu, stdout);
+		ram_dump(&cpu, stdout);
 
 		cmds = *(COMMANDS*)(cpu.code + cpu.ip++);
-		printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
+		//printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
 
 		switch(cmds.cmd) {
+#define DEF_CMD(num, name, arg, code)						\
+	case CMD_##name:							\
+		printf(#name"\n");						\
+		code;								\
+		break;
+
+#define DEF_JMP_CMD(num, name, code)						\
+	case CMD_##name:                                                        \
+        	printf(#name"\n");                                          \
+		code;	                                                        \
+		break;
+
+#define DEF_COND_JMP_CMD(num, name, cond)					\
+	case CMD_##name: {							\
+		printf(#name"\n");						\
+		arg_val = _POP;							\
+		val_t b = _POP;							\
+		if (b cond arg_val)						\
+			IP = (int)CODE(IP);					\
+		else 								\
+			IP += (int)sizeof(val_t);				\
+ 		}								 \
+		break;
+
 #include "commands.h"
 #undef DEF_CMD
 #undef DEF_JMP_CMD
@@ -99,7 +101,7 @@ void cpu_dump(CPU *cpu, FILE *file)
 		size = 255;
 
 	for (int i = 0; i!= size; i++) {
-		fprintf(file, "%02x ", i);
+		fprintf(file, "%02x ", (unsigned)i);
 	}
 
 	printf("\n");
@@ -139,9 +141,10 @@ void reg_dump(CPU *cpu, FILE *file)
 val_t _get_ram(CPU *cpu, int num)
 {
 	assert(cpu);
-
-	if (num <= 0 || num >= (MAX_RAM_SIZE + MAX_VRAM_SIZE))
+	
+	if (num >= MAX_RAM_SIZE + MAX_VRAM_SIZE - 1)
 		assert(!"SEGMENTATION_FAULT");
+
 	sleep(0);
 		
 	return cpu->RAM[num];
@@ -151,33 +154,32 @@ val_t *_ARG(CPU *cpu, val_t *arg_val, COMMANDS cmds)
 {
 	if (cmds.ram == 1) {
 		int a = (int)*(val_t*)(cpu->code + cpu->ip);
-		printf("a is %d\n", a);
+		printf("\n\n\t\tA IS %d\n\n", a);
 		if (cmds.reg == 1) {
 			int reg_data = (int)cpu->regs[a];
 			if (cmds.imm == 1) {
-		   		int b = cpu->code[cpu->ip + sizeof(val_t)];		
-				cpu->ip += 2 * sizeof(val_t);
+		   		int b = (int)*(val_t *)(cpu->code + cpu->ip + SIZEOF);
+				cpu->ip += 2 * SIZEOF;
+				printf("\n\n\t\tB IS %d\n\n", b);
 				return (cpu->RAM + b + reg_data);
 			} else {
-				cpu->ip += sizeof(val_t);
-				printf("REG DATA[%d] is %d\n", a, reg_data);
+				cpu->ip += SIZEOF;
 				return (cpu->RAM + reg_data);
 			}                                
 		} else if (cmds.imm == 1) {
-			cpu->ip += sizeof(val_t);
+			cpu->ip += SIZEOF;
 			return (cpu->RAM + a);
 		}
 	} else if (cmds.reg == 1){
-		int a = *(val_t*)(cpu->code + cpu->ip);
-		printf("a is %d\n", a);
-		cpu->ip += sizeof(val_t);
+		int a = (int)*(val_t*)(cpu->code + cpu->ip);
+		cpu->ip += SIZEOF;
 		return (cpu->regs + a);
 	} else {
-		cpu->ip += sizeof(val_t);
-		return (val_t*)(cpu->code + cpu->ip - sizeof(val_t));
+		cpu->ip += (int)sizeof(val_t);
+		return (val_t*)(cpu->code + cpu->ip - SIZEOF);
 	}
 
-	cpu->ip += sizeof(val_t);
+	cpu->ip += (int)sizeof(val_t);
 
 	return (arg_val);
 }

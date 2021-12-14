@@ -11,8 +11,8 @@ DEF_CMD(2,  add, 0,
 		})
 DEF_CMD(3,  sub, 0, 
 		{
-			val_t a = _POP;
 			val_t b = _POP;
+			val_t a = _POP;
 			CHECK_POP;
 			Push(a - b);
 		})
@@ -25,14 +25,15 @@ DEF_CMD(4,  mul, 0,
 		})
 DEF_CMD(5,  div, 0, 
 		{
-			val_t a = _POP;
 			val_t b = _POP;
+			val_t a = _POP;
 			CHECK_POP;
 			Push(a / b);
 
 		})
 DEF_CMD(6,   in, 0, 
-		{
+		{	
+			printf("IN :\n");
 			val_t a = 0;
 			scanf("%lg", &a);
 			Push(a);
@@ -57,7 +58,7 @@ DEF_CMD(13, display, 0,
 		{
 			for (int h = 0; h != SCREEN_HEIGHT; h++) {
 				for (int l = 0; l != SCREEN_LENGHT; l++) {
-					printf("%c", ((int)GET_VRAM(l + h * SCREEN_LENGHT) == 0) ? ' ' : '#');
+					printf("%c ", ((int)GET_VRAM(l + h * SCREEN_LENGHT) == 0) ? '.' : '#');
 				}
 				printf("\n");
 			}
@@ -79,7 +80,7 @@ DEF_CMD(16, sqrt, 0,
 
 DEF_JMP_CMD(21, jmp,
 		{
-			IP = CODE(IP);
+			IP = (int)CODE(IP);
 		})
 
 DEF_COND_JMP_CMD(22, ja, > )
@@ -96,12 +97,12 @@ DEF_COND_JMP_CMD(27, jne, !=)
 	
 DEF_JMP_CMD(28, call,
 		{
-			Push(IP + sizeof(val_t));
-			IP = CODE(IP);
+			Push(IP + SIZEOF);
+			IP = (int)CODE(IP);
 		})
 DEF_JMP_CMD(29, ret,
 		{
-			int a = _POP;
+			int a =(int)_POP;
 			IP = a;
 		})
  
