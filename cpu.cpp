@@ -39,7 +39,7 @@ int run_cpu(const char *namein)
 	while(cpu.ip < cpu.csize) {
 		//cpu_dump(&cpu, stdout);
 		//reg_dump(&cpu, stdout);
-		ram_dump(&cpu, stdout);
+		//ram_dump(&cpu, stdout);
 
 		cmds = *(COMMANDS*)(cpu.code + cpu.ip++);
 		//printf("[%u]\t[%u]\t[%u]\t[%d]\n", cmds.ram, cmds.reg, cmds.imm, cmds.cmd);
@@ -53,7 +53,7 @@ int run_cpu(const char *namein)
 
 #define DEF_JMP_CMD(num, name, code)						\
 	case CMD_##name:                                                        \
-        	printf(#name"\n");                                          \
+        	printf(#name"\n");						\
 		code;	                                                        \
 		break;
 
@@ -154,13 +154,11 @@ val_t *_ARG(CPU *cpu, val_t *arg_val, COMMANDS cmds)
 {
 	if (cmds.ram == 1) {
 		int a = (int)*(val_t*)(cpu->code + cpu->ip);
-		printf("\n\n\t\tA IS %d\n\n", a);
 		if (cmds.reg == 1) {
 			int reg_data = (int)cpu->regs[a];
 			if (cmds.imm == 1) {
 		   		int b = (int)*(val_t *)(cpu->code + cpu->ip + SIZEOF);
 				cpu->ip += 2 * SIZEOF;
-				printf("\n\n\t\tB IS %d\n\n", b);
 				return (cpu->RAM + b + reg_data);
 			} else {
 				cpu->ip += SIZEOF;

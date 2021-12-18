@@ -56,9 +56,15 @@ DEF_CMD(12, pop, 2,
 		})
 DEF_CMD(13, display, 0,
 		{
-			for (int h = 0; h != SCREEN_HEIGHT; h++) {
-				for (int l = 0; l != SCREEN_LENGHT; l++) {
-					printf("%c ", ((int)GET_VRAM(l + h * SCREEN_LENGHT) == 0) ? '.' : '#');
+			int addr   = (int)_POP;
+			int height = (int)_POP;
+			int width  = (int)_POP;
+
+			printf("\n\nDATA: addr = %d, h = %d, w = %d\n\n", addr, height, width);
+
+			for (int h = 1; h != height; h++) {
+				for (int l = 0; l != width; l++) {
+					printf("%c ", ((int)GET_RAM(l + h * width + addr) == 0) ? '.' : '#');
 				}
 				printf("\n");
 			}
