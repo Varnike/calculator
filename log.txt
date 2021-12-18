@@ -1,0 +1,23 @@
+ERROR : Underflow error!
+Stack<d>[0x7ffc21077240]:ERROR!; "stack" called from StackPop at includes/stack.cpp (70)
+	hash :  1718453207
+	structure left canary = 229354415
+	structure right canary = 229354415
+{
+	capasity = 8;
+	size = 0;
+	left data canary[0x5583a703e4a0] = 229354415
+	data[0x5583a703e4a8]
+	{
+		*[0] [0x5583a703e4a8] = POISONED
+		*[1] [0x5583a703e4b0] = POISONED
+		*[2] [0x5583a703e4b8] = POISONED
+		*[3] [0x5583a703e4c0] = POISONED
+		*[4] [0x5583a703e4c8] = POISONED
+		*[5] [0x5583a703e4d0] = 0.000000
+		*[6] [0x5583a703e4d8] = 0.000000
+		*[7] [0x5583a703e4e0] = 0.000000
+	}
+	right data canary[0x5583a703e4e8] : 229354415
+}
+

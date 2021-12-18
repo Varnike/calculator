@@ -1,0 +1,33 @@
+1)ASM  numbers
+	1.1 Syntax check
+2)DASM numbers
+	2.1 Pretty detection
+	2.2 input?
+	2.3 output
+	2.4 defines
+3)Basic cpu?
+	3.1 CMD_OUT
+	3.2 CMD_HLT
+	3.3 Pretty detection
+	3.4 Errors handling	
+4)ASM, DASM .bin!
++	4.0 first of all in int!
++	4.1 fread, fwrite
++	4.1 Array size?
++++	4.2 RISC
++	4.3 DASM???
++	4.4 pc/ip
+-	4.5 all doubles -> uint64t(*1000)
+5)CPU .bin!
++	5.1 Detection?
++	5.2 if DASM ok -> ctrl c v
++-------------------------------------------+
+6)CPU dump
+---->	6.0 Asm list
+	6.1 Stack dump only if stack is bad
+	6.2 Dump from example in notebook
+7)Version control
+	7.1 Structure in the begining of array
+8)make
+	8.1 stat for creation time
+9) Expand error handling

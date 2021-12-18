@@ -1,0 +1,30 @@
+in
+pop ax
+push 1
+pop bx
+push 1
+pop cx
+
+call factorial
+push cx
+out
+hlt
+
+factorial:
+        push ax
+        push bx
+        jal end_function
+
+        push cx
+        push bx
+        push 1
+        add
+        mul
+        pop cx
+        push bx
+        push 1
+        add
+        pop bx
+        call factorial
+end_function:
+        ret
