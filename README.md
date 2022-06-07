@@ -20,18 +20,18 @@ You can then run the program by running cpu:
 ./cpu
 ````
 ## CPU commands
-* 'push reg/imm/mem' - push reg/imm/mem to stack
-* 'pop reg/imm/mem' - pop value from stack to reg/mem
-* 'j? label' - jump to lablel if condition is satisfied
-* 'jmp label' - jump to label
-* 'call func' - push return address to stack and jump to func label
-* 'ret' - jump to address from stack
-* 'hlt' - stop cpu
-* 'label:' - label
-* 'in' - read number from console
-* 'out' - print number to console
+* `push reg/imm/mem` - push reg/imm/mem to stack
+* `pop reg/imm/mem` - pop value from stack to reg/mem
+* `j? label` - jump to lablel if condition is satisfied
+* `jmp label` - jump to label
+* `call func` - push return address to stack and jump to func label
+* `ret` - jump to address from stack
+* `hlt` - stop cpu
+* `label:` - label
+* `in` - read number from console
+* `out` - print number to console
 
-## Programm example
+## Program example
 This is an example of program which calculates the factorial of the entered number:
 ````sh
 in
